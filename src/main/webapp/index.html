@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html ng-app="jobcontrolApp">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Strudel Web</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="styles/ngDialog.min.css">
+    <link rel="stylesheet" href="styles/ngDialog-theme-default.min.css">
+    <link rel="stylesheet" href="styles/ngDialog-theme-plain.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body ng-controller="MainCtrl">
+    <iframe style="display:none; height:0; width:0; tabindex:-1;" id="hiddenIframe"></iframe>
+  	<div class="page-header">
+  		<h1>Strudel Web</h1>
+	</div>
+	
+	<!-- Login button -->
+	<div class="panel panel-info" ng-if="!isLoggedIn() && !loginStatus()">
+		<div class="panel-heading"><h3 class="panel-title">Not logged in</h3></div>
+		<div class="panel-body">
+			<div class="text-center">
+				<a href="#" ng-click="doLogin()"><strong>Click here to login with your AAF credentials</strong></a>
+			</div>
+			<div class="text-center">
+				<a href="#" ng-click="doLogin()"><img src="http://aaf.edu.au/wp-content/uploads/2010/01/aaf_logo.gif" alt="Australian Access Federation"/></a>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Login progress -->
+	<div class="alert alert-info" role="alert" ng-show="loginStatus()"><img src="images/ajax-loader.gif" />
+		<strong>{{ loginStatus() }}</strong>
+	</div>
+	
+	<!-- Section only shown if the user is logged in -->
+	<div ng-if="isLoggedIn()">
+		<div class="panel panel-default">
+			<div class="panel-body">
+			
+				<!-- Job launchers -->
+				<button type="button" class="btn btn-primary" ng-click="launchDesktop()">Launch new desktop</button>
+				<!-- Logout link -->
+				<div class="pull-right">
+					Logged in as {{ currentUser().uid }} | <a href="#" ng-click="doLogout()">logout</a>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-primary">
+			<div class="panel-heading"><h3 class="panel-title">Queued and running jobs</h3></div>
+			<div class="panel-body">
+				<job-list></job-list>
+			</div>
+		</div>
+	</div>	
+	
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-animate.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-resource.js"></script>
+	<script src="scripts/ngDialog.min.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/services/session-manager.js"></script>
+    <script src="scripts/services/jobcontrol-service.js"></script>
+    <script src="scripts/directives/job-list.js"></script>
+    <script src="scripts/controllers/main.js"></script>
+  </body>
+
+</html>

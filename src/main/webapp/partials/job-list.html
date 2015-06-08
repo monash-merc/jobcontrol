@@ -1,0 +1,15 @@
+<table class="table">
+	<thead>
+		<tr><th>#</th><th style="min-width: 150px;">Job name</th><th style="min-width: 150px;">State</th><th>Walltime remaining</th><th>Action</th></tr>
+	</thead>
+	<tbody ng-repeat="j in jobs">
+		<tr>
+			<th scope="row">{{ j.jobId }}</th>
+			<td>{{ j.jobName }}</td>
+			<td>{{ j.state }}</td>
+			<td><countdown start-time="{{ j.remainingWalltime }}" count-down="j.state === 'RUNNING'"></countdown></td>
+			<td><button type="button" class="btn btn-danger btn-sm" ng-class="{ disabled: j.state === 'COMPLETING' }" ng-click="terminateJob(j)">Terminate job</button> <button type="button" class="btn btn-success btn-sm" ng-class="{ disabled: !hasTunnel(j) }" ng-show="isDesktop(j)" ng-click="launchGuacamole(j)">Launch desktop<span ng-hide="hasTunnel(j)"> (waiting for tunnel)</span></button></td>
+		<tr>
+	</tbody>
+</table>
+<div ng-show="jobs.length === 0" class="text-center">Move along, nothing to see here!</div>
