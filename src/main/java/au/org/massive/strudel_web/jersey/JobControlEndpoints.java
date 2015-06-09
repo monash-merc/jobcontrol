@@ -2,6 +2,7 @@
 package au.org.massive.strudel_web.jersey;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import au.org.massive.strudel_web.vnc.GuacamoleDB;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 
@@ -215,6 +217,43 @@ public class JobControlEndpoints extends Endpoint{
     	responseData.put("desktopName", desktopName);
     	return gson.toJson(responseData);
     }
+
+	@GET
+	@Path("/updatevncpwd")
+	@Produces("application/json")
+	public String updateVncPassword(@QueryParam("desktopname") String desktopName,
+									@QueryParam("vncpassword") String newPassword,
+									@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
+		Session session = getSessionWithCertificateOrSendError(request, response);
+		if (session == null) {
+			return null;
+		}
+
+		boolean done = false;
+		for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
+			if (s.getName().equals(desktopName)) {
+				s.setPassword(newPassword);
+				try {
+					GuacamoleDB.updateSession(s);
+				} catch (SQLException e) {
+					e.printStackTrace();
+					break;
+				}
+				done = true;
+				break;
+			}
+		}
+
+		Gson gson = new Gson();
+		Map<String,Object> responseData = new HashMap<String,Object>();
+		if (done) {
+			responseData.put("message", "password updated");
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "could not update vnc password");
+			return null;
+		}
+		return gson.toJson(responseData);
+	}
     
     /**
      * Stops a guacamole VNC session

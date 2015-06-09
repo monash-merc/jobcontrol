@@ -150,10 +150,27 @@ angular.module('jobcontrolApp')
 	    };
 
 	    $scope.launchGuacamole = function(job) {
+	    var desktopName = job.jobId+'-'+job.jobName;
 		if (job.state === 'RUNNING') {
 		    var guacWindow = $window.open('loading-desktop.html', '_blank');
 		    var hiddenIframe = document.getElementById('hiddenIframe');
 		    var onLoadHandler = function() {
+		    function waitForPasswordUpdate() {
+		    	var done = false;
+		    	jobcontrolService.getVncPassword(job.jobId, function(password) {
+		    		jobcontrolService.updateVncTunnelPassword(desktopName, password,
+		    		function() {
+		    			done = true;
+		    		});
+		    	})
+
+		    	function wait() {
+		    		if (!done) {
+		    			setTimeout(wait, 100);
+		    		}
+		    	};
+		    	wait();
+		    }
 			function waitForLogoutButton() {
 			    var logoutButton = hiddenIframe.contentWindow.document.getElementsByClassName('logout')[0];
 			    if (typeof logoutButton === 'undefined') {
@@ -167,9 +184,10 @@ angular.module('jobcontrolApp')
 			    if (hiddenIframe.contentWindow.location.hash !== '#/login/') {
 				setTimeout(waitForLogout, 100);
 			    } else {
-				guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+job.jobId+'-'+job.jobName;
+				guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+desktopName;
 			    }
 			};
+			waitForPasswordUpdate();
 			waitForLogoutButton();
 			waitForLogout();
 			delete hiddenIframe.onload;

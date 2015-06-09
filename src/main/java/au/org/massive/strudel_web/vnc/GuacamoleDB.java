@@ -78,7 +78,6 @@ public class GuacamoleDB {
 		PreparedStatement query;
 		Connection conn = db.getConnection();
 		try {
-			// Add the connection
 			query = conn.prepareStatement("INSERT INTO vnc_connection (name, host_name, port, protocol, password, user_id) values (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			query.setString(1, session.getName());
 			query.setString(2, session.getHostName());
@@ -91,6 +90,28 @@ public class GuacamoleDB {
 			if (keysResultSet.next()) {
 				session.setId(keysResultSet.getInt(1));
 			}
+		} finally {
+			conn.close();
+		}
+	}
+
+	public static void updateSession(GuacamoleSession session) throws SQLException {
+		// Add the guacamole user if it's missing
+		addGuacUserIfMissing(session.getUser());
+
+		GuacamoleDB db = new GuacamoleDB();
+		PreparedStatement query;
+		Connection conn = db.getConnection();
+		try {
+			query = conn.prepareStatement("UPDATE vnc_connection SET name=?, host_name=?, port=?, protocol=?, password=?, user_id=? WHERE id=?", Statement.RETURN_GENERATED_KEYS);
+			query.setString(1, session.getName());
+			query.setString(2, session.getHostName());
+			query.setInt(3, session.getPort());
+			query.setString(4, session.getProtocol());
+			query.setString(5, session.getPassword());
+			query.setInt(6,  session.getUser().getId());
+			query.setInt(7, session.getId());
+			query.executeUpdate();
 		} finally {
 			conn.close();
 		}
