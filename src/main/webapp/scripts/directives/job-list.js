@@ -150,33 +150,45 @@ angular.module('jobcontrolApp')
 	    };
 
 	    $scope.launchGuacamole = function(job) {
+	    var desktopName = job.jobId+'-'+job.jobName;
 		if (job.state === 'RUNNING') {
 		    var guacWindow = $window.open('loading-desktop.html', '_blank');
 		    var hiddenIframe = document.getElementById('hiddenIframe');
 		    var onLoadHandler = function() {
 			function waitForLogoutButton() {
+			    $log.info('Simulating guacamole logout (waiting for logout button)');
+			    var deferred = $q.defer();
 			    var logoutButton = hiddenIframe.contentWindow.document.getElementsByClassName('logout')[0];
 			    if (typeof logoutButton === 'undefined') {
 				setTimeout(waitForLogoutButton, 100);
 			    } else {
 				logoutButton.click();
+				deferred.resolve();
 			    }
+			    return deferred.promise;
 			}
 			function waitForLogout() {
-			    console.log(hiddenIframe.contentWindow.location.hash);
-			    if (hiddenIframe.contentWindow.location.hash !== '#/login/') {
-				setTimeout(waitForLogout, 100);
-			    } else {
-				guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+job.jobId+'-'+job.jobName;
+			    $log.info('Simulating guacamole logout (clicking logout button)');
+			    var deferred = $q.defer();
+			    function clickButton() {
+				if (hiddenIframe.contentWindow.location.hash !== '#/login/') {
+				    setTimeout(clickButton, 100);
+				} else {
+				    guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+desktopName;
+				    deferred.resolve();
+				}
 			    }
+			    clickButton();
+			    return deferred.promise;
 			};
-			waitForLogoutButton();
-			waitForLogout();
-			delete hiddenIframe.onload;
+			waitForLogoutButton.then(waitForLogout).then(function() {
+			    delete hiddenIframe.onload;
+			    $log.info('Guacamole session started');
+			});
 		    };
 		    hiddenIframe.onload = onLoadHandler;
 		    document.getElementById('hiddenIframe').setAttribute('src', '/guacamole-0.9.5');
-		    
+
 		}
 	    };
 	};
