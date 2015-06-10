@@ -32,7 +32,7 @@ angular.module('jobcontrolApp')
     })
     .directive('jobList', function() {
 	
-	var controller = function($scope, $interval, $window, ngDialog, jobcontrolService, jobcontrolEventService) {
+	var controller = function($scope, $interval, $window, $q, $log, ngDialog, jobcontrolService, jobcontrolEventService) {
 	    
 	    $scope.jobsLoading = true;
 	    $scope.jobs = [];
