@@ -81,11 +81,23 @@ public class Session {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Set<GuacamoleSession> getGuacamoleSessionsSet() {
+	public synchronized Set<GuacamoleSession> getGuacamoleSessionsSet() {
 		Set<GuacamoleSession> guacamoleSessions = (Set<GuacamoleSession>) session.getAttribute(GUAC_SESSION);
 		if (session.getAttribute(GUAC_SESSION) == null) {
 			guacamoleSessions = new HashSet<GuacamoleSession>();
 			session.setAttribute(GUAC_SESSION, guacamoleSessions);
+		}
+
+		// Handle multiple user sessions - return all Guacamole sessions belonging to the user even if over multiple sessions
+		for (Session activeSession : SessionManager.getActiveSessions()) {
+			if (!activeSession.getSessionId().equals(this.getSessionId()) && activeSession.hasCertificate() && this.hasCertificate() &&
+					activeSession.getCertificate().getUserName().equals(this.getCertificate().getUserName())) {
+				Set<GuacamoleSession> otherGuacSessions = (Set<GuacamoleSession>) activeSession.getHttpSession().getAttribute(GUAC_SESSION);
+				if (otherGuacSessions != null) {
+					guacamoleSessions.addAll(otherGuacSessions);
+					otherGuacSessions.clear();
+				}
+			}
 		}
 		return guacamoleSessions;
 	}

@@ -78,17 +78,25 @@ public class GuacamoleDB {
 		PreparedStatement query;
 		Connection conn = db.getConnection();
 		try {
-			query = conn.prepareStatement("INSERT INTO vnc_connection (name, host_name, port, protocol, password, user_id) values (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			query = conn.prepareStatement("SELECT COUNT(*) FROM vnc_connection WHERE name=?");
 			query.setString(1, session.getName());
-			query.setString(2, session.getHostName());
-			query.setInt(3, session.getPort());
-			query.setString(4, session.getProtocol());
-			query.setString(5, session.getPassword());
-			query.setInt(6,  session.getUser().getId());
-			query.executeUpdate();
-			ResultSet keysResultSet = query.getGeneratedKeys();
-			if (keysResultSet.next()) {
-				session.setId(keysResultSet.getInt(1));
+			ResultSet r = query.executeQuery();
+			if (r.first() && r.getInt(1) == 0) {
+				query = conn.prepareStatement("INSERT INTO vnc_connection (name, host_name, port, protocol, password, user_id) values (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				query.setString(1, session.getName());
+				query.setString(2, session.getHostName());
+				query.setInt(3, session.getPort());
+				query.setString(4, session.getProtocol());
+				query.setString(5, session.getPassword());
+				query.setInt(6, session.getUser().getId());
+				query.executeUpdate();
+				ResultSet keysResultSet = query.getGeneratedKeys();
+				if (keysResultSet.next()) {
+					session.setId(keysResultSet.getInt(1));
+				}
+			} else {
+				// Duplicate desktop name attempted. ID of -1 indicates failure
+				session.setId(-1);
 			}
 		} finally {
 			conn.close();

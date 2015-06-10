@@ -80,44 +80,74 @@ angular.module('jobcontrolApp')
 		    $scope.jobsLoading = false;
 		    
 		    if (typeof callback === 'function') {
-			callback();
+			callback(jobs);
 		    }
 		});
 	    };
 
 	    var setupTunnel = function(job) {
+	    var deferred = $q.defer();
 		if (job.state === 'RUNNING' && $scope.isDesktop(job) && !$scope.hasTunnel(job)) {
 		    var desktopName = job.jobId + '-'+job.jobName;
 		    jobcontrolService.getVncParameters(job.jobId, function(params) {
-			jobcontrolService.startVncTunnel(desktopName, params.password, params.remoteHost, params.display);
+			jobcontrolService.startVncTunnel(desktopName, params.password, params.remoteHost, params.display, function() {
+				deferred.resolve();
+			});
 		    });
+		} else {
+			deferred.resolve();
 		}
+		return deferred.promise;
 	    }
 
-	    var refreshTunnelList = function() {
+		var refreshTunnelLock = false;
+	    var refreshTunnelList = function(jobs) {
 		jobcontrolService.listVncTunnels(function(tunnelList) {
 		    $scope.tunnelList = tunnelList;
 		    // Look for stale tunnels
 		    var tunnelJobIdRegex = /^([0-9]+)/;
-		    for (var i = 0; i < $scope.tunnelList.length; i++) {
-			var jobId = tunnelJobIdRegex.exec($scope.tunnelList[i].desktopName);
+		    for (var i = 0; i < tunnelList.length; i++) {
+			var jobId = tunnelJobIdRegex.exec(tunnelList[i].desktopName);
 			if (jobId != null) {
 			    jobId = parseInt(jobId[0]);
 			    var isStale = true;
-			    for (var j = 0; j < $scope.jobs.length; j++) {
-				if (jobId === parseInt($scope.jobs[j].jobId)) {
+			    for (var j = 0; j < jobs.length; j++) {
+				if (jobId === parseInt(jobs[j].jobId)) {
 				    isStale = false;
 				    break;
 				}
 			    }
 			    if (isStale) {
-				jobcontrolService.stopVncTunnel($scope.tunnelList[i].id);
+				jobcontrolService.stopVncTunnel(tunnelList[i].id);
 			    }
 			}
 		    }
 		    // Create new tunnels
-		    for (var i = 0; i < $scope.jobs.length; i++) {
-			setupTunnel($scope.jobs[i]);
+		    if (!refreshTunnelLock) {
+		    	$log.info('Performing tunnel kickoff');
+		    	refreshTunnelLock = true;
+		    	var tunnelPromise = null;
+		    	$log.info($scope.tunnelList);
+		    	for (var i = 0; i < jobs.length; i++) {
+		    		if (tunnelPromise === null) {
+						tunnelPromise = setupTunnel(jobs[i]);
+					} else {
+						tunnelPromise = tunnelPromise.then(function() {
+							return setupTunnel(jobs[i]);
+						});
+					}
+				}
+		    	if (tunnelPromise !== null) {
+		    		tunnelPromise.finally(function() {
+		    			$log.info('Tunnel refresh complete, releasing lock');
+						refreshTunnelLock = false;
+		    		});
+		    	} else {
+		    		$log.info('No tunnels need to be created, releasing lock');
+		    		refreshTunnelLock = false;
+		    	}
+		    } else {
+		    	$log.info('Skipping tunnel kickoff - already in progress');
 		    }
 		});
 	    };
