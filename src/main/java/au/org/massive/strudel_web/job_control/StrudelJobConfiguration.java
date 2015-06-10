@@ -41,6 +41,7 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		
 		Map<String,String> defaults = new HashMap<String,String>();
 		// default values
+		defaults.put("queue", "batch");
 		defaults.put("nodes", "1");
 		defaults.put("ppn", "1");
 		defaults.put("hours", "1");
@@ -48,8 +49,12 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		
 		// required parameters
 		String[] requiredParams = {};
-		
-		String commandPattern = "mkdir ~/.vnc ; "
+
+		String commandPattern = "echo -e '#!/bin/bash\n/usr/local/bin/vncsession --vnc turbovnc ; sleep 36000000 ' | "
+				+ "sbatch -p ${queue} -N ${nodes} --mincpus ${ppn} --time=${hours}:${minutes}:00 -J desktop_$(whoami) -o .vnc/slurm-%j.out";
+		/*
+		String commandPattern = "module load turbovnc; module load libjpeg-turbo; "
+				+ "mkdir ~/.vnc ; "
 				+ "rm -f ~/.vnc/clearpass ; "
 				+ "touch ~/.vnc/clearpass ; "
 				+ "chmod 600 ~/.vnc/clearpass ; "
@@ -57,7 +62,8 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 				+ "echo $passwd > ~/.vnc/clearpass ; "
 				+ "cat ~/.vnc/clearpass | vncpasswd -f > ~/.vnc/passwd ; "
 				+ "chmod 600 ~/.vnc/passwd ; "
-				+ "echo -e '#!/bin/bash\nvncserver ; sleep 36000000 ' | /opt/slurm/bin/sbatch -p batch -N ${nodes} -n ${ppn} --time=${hours}:${minutes}:00 -J desktop_$(whoami) -o .vnc/slurm-%j.out";
+				+ "echo -e '#!/bin/bash\nvncserver ; sleep 36000000 ' | sbatch -p batch -N ${nodes} -n ${ppn} --time=${hours}:${minutes}:00 -J desktop_$(whoami) -o .vnc/slurm-%j.out";
+		*/
 		String resultPattern = "^Submitted batch job (?<jobId>[0-9]+)$";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);
@@ -74,7 +80,7 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		// required parameters
 		String[] requiredParams = { "jobid" };
 		
-		String commandPattern = "/opt/slurm/bin/scancel ${jobid}";
+		String commandPattern = "scancel ${jobid}";
 		String resultPattern = "(?<message>.+)";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);
@@ -91,7 +97,7 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		// required parameters
 		String[] requiredParams = {};
 		
-		String commandPattern = "/opt/slurm/bin/squeue -o \"%i %L %T %j\" -u $(whoami)";
+		String commandPattern = "squeue -o \"%i %L %T %j\" -u $(whoami)";
 		String resultPattern = "(?<jobId>[0-9]+) (?<remainingWalltime>\\S+) (?<state>\\S+) (?<jobName>\\S+)$";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);
@@ -109,7 +115,8 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		String[] requiredParams = { "jobid" };
 		
 		String commandPattern = "cat .vnc/slurm-${jobid}.out";
-		String resultPattern = "New 'X' desktop is \\S+:(?<vncDisplay>[0-9]+)";
+		String resultPattern = "^Desktop 'Characterisation Virtual Laboratory' started on display .+:(?<vncDisplay>[0-9]+)";
+		//String resultPattern = "New 'X' desktop is \\S+:(?<vncDisplay>[0-9]+)";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);
 	}
@@ -125,8 +132,10 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		// required parameters
 		String[] requiredParams = { "jobid" };
 		
-		String commandPattern = "cat .vnc/clearpass";
-		String resultPattern = "^(?<password>[^\\s]+)";
+		String commandPattern = "module load turbovnc ; " +
+				"DISP=$(cat .vnc/slurm-${jobid}.out | grep 'started on display' | awk '{print $(NF)}') ; " +
+				"vncpasswd -o -display $DISP";
+		String resultPattern = "^Full control one-time password: (?<password>[^\\s]+)";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);
 	}
@@ -142,7 +151,7 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 		// required parameters
 		String[] requiredParams = { "jobid" };
 		
-		String commandPattern = "/opt/slurm/bin/squeue -j ${jobid} -o \"%N\" | tail -n -1 | cut -f 1 -d ',' | xargs -iname getent hosts name | cut -f 1 -d ' ' ";
+		String commandPattern = "squeue -j ${jobid} -o \"%N\" | tail -n -1 | cut -f 1 -d ',' | xargs -iname getent hosts name | cut -f 1 -d ' ' ";
 		String resultPattern = "^(?<execHost>[^\\s]+)";
 				
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);

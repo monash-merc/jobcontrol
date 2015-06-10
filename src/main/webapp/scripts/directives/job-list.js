@@ -155,6 +155,17 @@ angular.module('jobcontrolApp')
 		    var guacWindow = $window.open('loading-desktop.html', '_blank');
 		    var hiddenIframe = document.getElementById('hiddenIframe');
 		    var onLoadHandler = function() {
+		    function waitForPasswordUpdate() {
+			$log.info('Waiting for password update');
+			var deferred = $q.defer();
+		    	jobcontrolService.getVncPassword(job.jobId, function(password) {
+		    		jobcontrolService.updateVncTunnelPassword(desktopName, password,
+		    		function() {
+				    deferred.resolve();
+		    		});
+		    	});
+			return deferred.promise;
+		    }
 			function waitForLogoutButton() {
 			    $log.info('Simulating guacamole logout (waiting for logout button)');
 			    var deferred = $q.defer();
@@ -181,7 +192,7 @@ angular.module('jobcontrolApp')
 			    clickButton();
 			    return deferred.promise;
 			};
-			waitForLogoutButton.then(waitForLogout).then(function() {
+			waitForPasswordUpdate().then(waitForLogoutButton).then(waitForLogout).then(function() {
 			    delete hiddenIframe.onload;
 			    $log.info('Guacamole session started');
 			});
