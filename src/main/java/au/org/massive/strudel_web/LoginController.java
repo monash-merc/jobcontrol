@@ -61,7 +61,7 @@ public class LoginController extends HttpServlet {
 		out.println("<meta charset=\"UTF-8\">");
 		out.println("<title>JobControl Login</title>");
 		out.println("</head>");
-		out.println("<body></body>");
+		out.println("<body>Login complete! You can close me now :)</body>");
 		out.println("<script type=\"text/javascript\">");
 		out.println("opener.loginComplete();");
 		out.println("window.close();");
