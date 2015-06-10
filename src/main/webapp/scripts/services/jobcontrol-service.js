@@ -23,7 +23,8 @@ angular.module('jobcontrolApp')
 	var vncTunnelResource = $resource('api/:vncRequest', null, {
 	    getList: { method: 'get', params: {vncRequest: 'listvnctunnels'}, isArray: true },
 	    startTunnel: { method: 'get', params: {vncRequest: 'startvnctunnel'}, isArray: false },
-	    stopTunnel: { method: 'get', params: {vncRequest: 'stopvnctunnel'}, isArray: false }
+	    stopTunnel: { method: 'get', params: {vncRequest: 'stopvnctunnel'}, isArray: false },
+	    updateVncTunnelPassword: { method: 'get', params: {vncRequest: 'updatevncpwd'}, isArray: false }
 	});
 	
 	
@@ -44,7 +45,8 @@ angular.module('jobcontrolApp')
 			{hours: jobParams.hours,
 			 minutes: jobParams.minutes,
 			 nodes: jobParams.nodes,
-			 ppn: jobParams.ppn},
+			 ppn: jobParams.ppn,
+			 queue: jobParams.queue},
 			function(data) {
 			    callbackSuccess(data[0].jobId);
 			},
@@ -66,6 +68,9 @@ angular.module('jobcontrolApp')
 	    stopVncTunnel: function(id, callback) {
 		vncTunnelResource.stopTunnel({id: id}, callback);
 	    },
+	    getVncPassword: function(jobId, callback) {
+	        executeResource.getVncPassword({jobid: jobId}, function(data) { callback(data[0].password); });
+	    },
 	    getVncParameters: function(jobId, callback) {
 		var params = { 'password': null,
                                'remoteHost': null,
@@ -81,6 +86,11 @@ angular.module('jobcontrolApp')
 		executeResource.getVncPassword({jobid: jobId}, function(data) { params.password = data[0].password; returnValues(); });
 		executeResource.getExecHost({jobid: jobId}, function(data) { params.remoteHost = data[0].execHost; returnValues(); });
 		executeResource.getVncDisplay({jobid: jobId}, function(data) { params.display = data[0].vncDisplay; returnValues(); });
-	    }
+	    },
+	    updateVncTunnelPassword: function(name, password, callback) {
+        		var params = { 'desktopname': name,
+        			       'vncpassword': password };
+        		vncTunnelResource.updateVncTunnelPassword(params, callback);
+        	    }
 	};
     });

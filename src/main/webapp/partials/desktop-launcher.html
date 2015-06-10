@@ -8,6 +8,14 @@
 	</div>
 	<div>Nodes required: <input type="text" size="3" ng-model="job.nodes" ng-change="job.nodes = parseInt(job.nodes)" /></div>
 	<div>Processors per node required: <input type="text" size="3" ng-model="job.ppn" ng-change="job.ppn = parseInt(job.ppn)" /></div>
+	<div>Node type:
+		<select ng-model="job.queue" ng-init="job.queue = 'batch'">
+			<option value="batch">CVL Default</option>
+			<option value="compute">CVL Large Node</option>
+			<option value="vis">CVL Vis Node</option>
+			<option value="huygens">CVL Huygens</option>
+		</select>
+	</div>
 	<div class="flow-container" style="height: 30px;">
 		<div class="pull-left"><button type="button" class="btn btn-success" ng-click="launch(job)">Launch</button></div>
 		<div class="pull-right"><button type="button" class="btn btn-primary" ng-click="cancel()">Cancel</button></div>
