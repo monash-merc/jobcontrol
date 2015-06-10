@@ -156,45 +156,50 @@ angular.module('jobcontrolApp')
 		    var hiddenIframe = document.getElementById('hiddenIframe');
 		    var onLoadHandler = function() {
 		    function waitForPasswordUpdate() {
-		    	var done = false;
+			$log.info('Waiting for password update');
+			var deferred = $q.defer();
 		    	jobcontrolService.getVncPassword(job.jobId, function(password) {
 		    		jobcontrolService.updateVncTunnelPassword(desktopName, password,
 		    		function() {
-		    			done = true;
+				    deferred.resolve();
 		    		});
-		    	})
-
-		    	function wait() {
-		    		if (!done) {
-		    			setTimeout(wait, 100);
-		    		}
-		    	};
-		    	wait();
+		    	});
+			return deferred.promise;
 		    }
 			function waitForLogoutButton() {
+			    $log.info('Simulating guacamole logout (waiting for logout button)');
+			    var deferred = $q.defer();
 			    var logoutButton = hiddenIframe.contentWindow.document.getElementsByClassName('logout')[0];
 			    if (typeof logoutButton === 'undefined') {
 				setTimeout(waitForLogoutButton, 100);
 			    } else {
 				logoutButton.click();
+				deferred.resolve();
 			    }
+			    return deferred.promise;
 			}
 			function waitForLogout() {
-			    console.log(hiddenIframe.contentWindow.location.hash);
-			    if (hiddenIframe.contentWindow.location.hash !== '#/login/') {
-				setTimeout(waitForLogout, 100);
-			    } else {
-				guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+desktopName;
+			    $log.info('Simulating guacamole logout (clicking logout button)');
+			    var deferred = $q.defer();
+			    function clickButton() {
+				if (hiddenIframe.contentWindow.location.hash !== '#/login/') {
+				    setTimeout(clickButton, 100);
+				} else {
+				    guacWindow.location.href='/guacamole-0.9.5/#/client/c/'+desktopName;
+				    deferred.resolve();
+				}
 			    }
+			    clickButton();
+			    return deferred.promise;
 			};
-			waitForPasswordUpdate();
-			waitForLogoutButton();
-			waitForLogout();
-			delete hiddenIframe.onload;
+			waitForPasswordUpdate().then(waitForLogoutButton).then(waitForLogout).then(function() {
+			    delete hiddenIframe.onload;
+			    $log.info('Guacamole session started');
+			});
 		    };
 		    hiddenIframe.onload = onLoadHandler;
 		    document.getElementById('hiddenIframe').setAttribute('src', '/guacamole-0.9.5');
-		    
+
 		}
 	    };
 	};
