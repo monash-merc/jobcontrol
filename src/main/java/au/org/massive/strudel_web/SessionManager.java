@@ -28,7 +28,7 @@ public class SessionManager implements HttpSessionListener {
 	public static void endSession(String id) {
 		HttpSession session = getSessionById(id);
 		if (session != null) {
-			session.invalidate();
+			endSession(session);
 		}
 	}
 	
@@ -38,9 +38,11 @@ public class SessionManager implements HttpSessionListener {
 	
 	public static void endSession(HttpSession session) {
 		session.invalidate();
+		sessionMap.remove(session.getId());
 	}
-	
+
 	public static Set<Session> getActiveSessions() {
+
 		Set<Session> activeSessions = new HashSet<Session>();
 		for (HttpSession s : sessionMap.values()) {
 			activeSessions.add(new Session(s));
@@ -62,8 +64,6 @@ public class SessionManager implements HttpSessionListener {
 		for (GuacamoleSession guacSession : guacSessions) {
 			GuacamoleSessionManager.endSession(guacSession, s);
 		}
-		
-		sessionMap.remove(event.getSession().getId());
 	}
 
 }
