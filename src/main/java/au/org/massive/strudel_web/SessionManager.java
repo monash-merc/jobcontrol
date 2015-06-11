@@ -38,14 +38,18 @@ public class SessionManager implements HttpSessionListener {
 	
 	public static void endSession(HttpSession session) {
 		session.invalidate();
-		sessionMap.remove(session.getId());
 	}
 
 	public static Set<Session> getActiveSessions() {
 
 		Set<Session> activeSessions = new HashSet<Session>();
 		for (HttpSession s : sessionMap.values()) {
-			activeSessions.add(new Session(s));
+			try {
+				s.getCreationTime();
+				activeSessions.add(new Session(s));
+			} catch (IllegalStateException e) {
+				// Don't add it; it's inactive
+			}
 		}
 		return activeSessions;
 	}
@@ -64,6 +68,8 @@ public class SessionManager implements HttpSessionListener {
 		for (GuacamoleSession guacSession : guacSessions) {
 			GuacamoleSessionManager.endSession(guacSession, s);
 		}
+
+		sessionMap.remove(s.getSessionId());
 	}
 
 }
