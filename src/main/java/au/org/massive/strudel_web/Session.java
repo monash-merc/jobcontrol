@@ -1,7 +1,9 @@
 package au.org.massive.strudel_web;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -84,7 +86,7 @@ public class Session {
 	public synchronized Set<GuacamoleSession> getGuacamoleSessionsSet() {
 		Set<GuacamoleSession> guacamoleSessions = (Set<GuacamoleSession>) session.getAttribute(GUAC_SESSION);
 		if (session.getAttribute(GUAC_SESSION) == null) {
-			guacamoleSessions = new HashSet<GuacamoleSession>();
+			guacamoleSessions = Collections.newSetFromMap(new ConcurrentHashMap<GuacamoleSession, Boolean>());
 			session.setAttribute(GUAC_SESSION, guacamoleSessions);
 		}
 

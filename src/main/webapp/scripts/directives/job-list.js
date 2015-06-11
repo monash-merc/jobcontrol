@@ -93,6 +93,10 @@ angular.module('jobcontrolApp')
 			jobcontrolService.startVncTunnel(desktopName, params.password, params.remoteHost, params.display, function() {
 				deferred.resolve();
 			});
+		    }, function() {
+		    	// Error occurred, but probably temporary
+		    	$log.info('Temporary error setting up tunnel');
+		    	deferred.resolve();
 		    });
 		} else {
 			deferred.resolve();

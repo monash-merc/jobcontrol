@@ -71,21 +71,35 @@ angular.module('jobcontrolApp')
 	    getVncPassword: function(jobId, callback) {
 	        executeResource.getVncPassword({jobid: jobId}, function(data) { callback(data[0].password); });
 	    },
-	    getVncParameters: function(jobId, callback) {
+	    getVncParameters: function(jobId, callback, fail) {
 		var params = { 'password': null,
                                'remoteHost': null,
 			       'display': null };
-		var returnValues = function() {
+		var hasErrors = false;
+		var returnValues = function(failed) {
 		    if ( params.password != null &&
 			 params.remoteHost != null &&
 			 params.display != null ) {
 			callback(params);
+		    } else if (failed && !hasErrors) {
+		    	fail();
+		    	hasErrors = true;
 		    }
 		};
 
-		executeResource.getVncPassword({jobid: jobId}, function(data) { params.password = data[0].password; returnValues(); });
-		executeResource.getExecHost({jobid: jobId}, function(data) { params.remoteHost = data[0].execHost; returnValues(); });
-		executeResource.getVncDisplay({jobid: jobId}, function(data) { params.display = data[0].vncDisplay; returnValues(); });
+		executeResource.getVncPassword({jobid: jobId}, function(data) { params.password = data[0].password; returnValues(false); },
+		function() { returnValues(true); });
+		executeResource.getExecHost({jobid: jobId}, function(data) { params.remoteHost = data[0].execHost; returnValues(false); },
+		function() { returnValues(true); });
+		executeResource.getVncDisplay({jobid: jobId}, function(data) {
+			if (typeof data[0] !== 'undefined') {
+				params.display = data[0].vncDisplay;
+				returnValues(false);
+				} else {
+					returnValues(true);
+				}
+			},
+		function() { returnValues(true); });
 	    },
 	    updateVncTunnelPassword: function(name, password, callback) {
         		var params = { 'desktopname': name,
