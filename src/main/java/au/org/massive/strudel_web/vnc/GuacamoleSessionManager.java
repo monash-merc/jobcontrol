@@ -42,6 +42,11 @@ public class GuacamoleSessionManager implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
+		try {
+			GuacamoleDB.cleanDb();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		final long FIVE_SECONDS = 5000;
 		tunnelCleaner.schedule(new TimerTask() {
 
@@ -73,7 +78,10 @@ public class GuacamoleSessionManager implements ServletContextListener {
 			guacSession.setPort(startTunnel(remoteHost, remotePort, session));
 			guacSession.setUser(new GuacamoleUser(0, session.getCertificate().getUserName(), session.getUserEmail()));
 			GuacamoleDB.createSession(guacSession);
-			session.getGuacamoleSessionsSet().add(guacSession);
+			if (guacSession.getId() > -1) { // A session of -1 indicates failure (i.e. attempt at creating a duplicate tunnel
+											// so don't add it to the set.
+				session.getGuacamoleSessionsSet().add(guacSession);
+			}
 		} catch (SQLException | IOException e) {
 			throw new RuntimeException(e);
 		}

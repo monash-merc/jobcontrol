@@ -69,6 +69,14 @@ public class GuacamoleDB {
 			conn.close();
 		}
 	}
+
+	public static void cleanDb() throws SQLException {
+		GuacamoleDB db = new GuacamoleDB();
+		PreparedStatement query;
+		Connection conn = db.getConnection();
+		query = conn.prepareStatement("TRUNCATE TABLE vnc_connection");
+		query.execute();
+	}
 	
 	public static void createSession(GuacamoleSession session) throws SQLException {
 		// Add the guacamole user if it's missing
