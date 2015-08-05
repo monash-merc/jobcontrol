@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="jobcontrolApp">
+<html>
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,62 +18,39 @@
     <![endif]-->
   </head>
 
-  <body ng-controller="MainCtrl">
+  <body>
     <iframe style="display:none; height:0; width:0; tabindex:-1;" id="hiddenIframe"></iframe>
   	<div class="page-header">
   		<h1>Strudel Web</h1>
 	</div>
-	
-	<!-- Login button -->
-	<div class="panel panel-info" ng-if="!isLoggedIn() && !loginStatus()">
-		<div class="panel-heading"><h3 class="panel-title">Not logged in</h3></div>
-		<div class="panel-body">
-			<div class="text-center">
-				<a href="#" ng-click="doLogin()"><strong>Click here to login with your AAF credentials</strong></a>
-			</div>
-			<div class="text-center">
-				<a href="#" ng-click="doLogin()"><img src="https://aaf.edu.au/wp-content/uploads/2010/01/aaf_logo.gif" alt="Australian Access Federation"/></a>
-			</div>
-		</div>
-	</div>
-	
-	<!-- Login progress -->
-	<div class="alert alert-info" role="alert" ng-show="loginStatus()"><img src="images/ajax-loader.gif" />
-		<strong>{{ loginStatus() }}</strong>
-	</div>
-	
-	<!-- Section only shown if the user is logged in -->
-	<div ng-if="isLoggedIn()">
-		<div class="panel panel-default">
-			<div class="panel-body">
-			
-				<!-- Job launchers -->
-				<button type="button" class="btn btn-primary" ng-click="launchDesktop()">Launch new desktop</button>
-				<!-- Logout link -->
-				<div class="pull-right">
-					Logged in as {{ currentUser().uid }} | <a href="#" ng-click="doLogout()">logout</a>
-				</div>
-			</div>
-		</div>
-		<div class="panel panel-primary">
-			<div class="panel-heading"><h3 class="panel-title">Queued and running jobs</h3></div>
-			<div class="panel-body">
-				<job-list></job-list>
-			</div>
-		</div>
-	</div>	
+
+	<div ui-view></div>
 	
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-animate.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-resource.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
 	<script src="scripts/ngDialog.min.js"></script>
     <script src="scripts/app.js"></script>
+	<script src="scripts/routes.js"></script>
+	<script src="scripts/services/strudel-core.js"></script>
     <script src="scripts/services/session-manager.js"></script>
     <script src="scripts/services/jobcontrol-service.js"></script>
     <script src="scripts/directives/job-list.js"></script>
-    <script src="scripts/controllers/main.js"></script>
+    <script src="views/desktop-list/controllers/desktoplist-controller.js"></script>
+	<script src="views/login/controllers/login-controller.js"></script>
+
+	<script type="text/javascript">
+		/**
+		 * This function is called by the GWT module when the application initialises
+		 */
+		function appReady() {
+			angular.bootstrap(document, ['jobcontrolApp']);
+		}
+	</script>
+  	<script src="strudelweb/strudelweb.nocache.js"></script>
   </body>
 
 </html>

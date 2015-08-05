@@ -37,14 +37,12 @@ public class OAuthService {
 	 * @throws OAuthSystemException
 	 */
 	public static OAuthClientRequest getAuthCodeRequest(URI afterAuthRedirect) throws OAuthSystemException {
-		OAuthClientRequest req = OAuthClientRequest.authorizationLocation(settings.getOAuthAuthorizationEndpoint())
+		return OAuthClientRequest.authorizationLocation(settings.getOAuthAuthorizationEndpoint())
 				.setClientId(settings.getOAuthClientId())
 				.setResponseType("code")
 				.setRedirectURI(settings.getOAuthRedirect())
 				.setState(afterAuthRedirect.toString())
 				.buildQueryMessage();
-		
-		return req;
 	}
 	
 	/**
