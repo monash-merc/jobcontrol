@@ -22,7 +22,7 @@ public class JobManager extends StateMonitor<JobListObject> {
     private static final String VNC_DISPLAY_URL="api/execute/vncdisplay";
     private static final String VNC_PASSWORD_URL="api/execute/vncpassword";
     private static final String START_DESKTOP_URL="api/execute/startdesktop";
-    private static final String STOP_DESKTOP_URL="api/execute/stopdesktop";
+    private static final String STOP_DESKTOP_URL="api/execute/stopjob";
     private static final String GET_VNC_PASSWORD_URL="api/execute/vncpassword";
     private static final String UPDATE_VNC_TUNNEL_PASSWORD="api/updatevncpwd";
 
