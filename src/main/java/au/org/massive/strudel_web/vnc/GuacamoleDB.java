@@ -52,7 +52,7 @@ public class GuacamoleDB {
 			if (result.first()) {
 				user.setId(result.getInt("id"));
 				user.setName(result.getString("name"));
-				return ;
+				return;
 			} else {
 				// Otherwise, create the user
 				query = conn.prepareStatement("INSERT INTO vnc_user (name, email) values (?, ?)", Statement.RETURN_GENERATED_KEYS);

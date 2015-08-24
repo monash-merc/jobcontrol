@@ -52,18 +52,6 @@ public class StrudelJobConfiguration extends AbstractJobConfiguration {
 
 		String commandPattern = "echo -e '#!/bin/bash\n/usr/local/bin/vncsession --vnc turbovnc ; sleep 36000000 ' | "
 				+ "sbatch -p ${queue} -N ${nodes} --mincpus ${ppn} --time=${hours}:${minutes}:00 -J desktop_$(whoami) -o .vnc/slurm-%j.out";
-		/*
-		String commandPattern = "module load turbovnc; module load libjpeg-turbo; "
-				+ "mkdir ~/.vnc ; "
-				+ "rm -f ~/.vnc/clearpass ; "
-				+ "touch ~/.vnc/clearpass ; "
-				+ "chmod 600 ~/.vnc/clearpass ; "
-				+ "passwd=$( dd if=/dev/urandom bs=1 count=8 2>/dev/null | md5sum | cut -b 1-8 ) ; "
-				+ "echo $passwd > ~/.vnc/clearpass ; "
-				+ "cat ~/.vnc/clearpass | vncpasswd -f > ~/.vnc/passwd ; "
-				+ "chmod 600 ~/.vnc/passwd ; "
-				+ "echo -e '#!/bin/bash\nvncserver ; sleep 36000000 ' | sbatch -p batch -N ${nodes} -n ${ppn} --time=${hours}:${minutes}:00 -J desktop_$(whoami) -o .vnc/slurm-%j.out";
-		*/
 		String resultPattern = "^Submitted batch job (?<jobId>[0-9]+)$";
 		
 		addConfiguration(jobName, defaults, requiredParams, commandPattern, resultPattern);

@@ -1,0 +1,18 @@
+<div ng-controller="DesktopListCtrl">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <!-- Job launchers -->
+            <button type="button" class="btn btn-primary" ng-click="launchDesktop()">Launch new desktop</button>
+            <!-- Logout link -->
+            <div class="pull-right">
+                Logged in as {{ currentUser().userName }} | <a href="#" ng-click="doLogout()">logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading"><h3 class="panel-title">Queued and running dekstops</h3></div>
+        <div class="panel-body">
+            <job-list></job-list>
+        </div>
+    </div>
+</div>

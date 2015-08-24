@@ -1,12 +1,10 @@
 'use strict';
 
 angular.module('jobcontrolApp')
-	.controller('MainCtrl', function($scope, $interval, ngDialog, sessionManagerService, sessionEventService, jobcontrolService, jobcontrolEventService) {
-		$scope.doLogin = sessionManagerService.doLogin;
+	.controller('DesktopListCtrl', function($scope, StrudelCore, ngDialog, sessionManagerService, jobcontrolEventService) {
 		$scope.doLogout = sessionManagerService.doLogout;
 		$scope.isLoggedIn = sessionManagerService.isLoggedIn;
-		$scope.loginStatus = sessionManagerService.getLoginStatus;
-		$scope.currentUser = sessionManagerService.getCurrentState;
+		$scope.currentUser = sessionManagerService.currentUser;
 		
 		$scope.launchDesktop = function() {
 			var dialog = ngDialog.open({
@@ -43,8 +41,8 @@ angular.module('jobcontrolApp')
 					$scope.launch = function(job) {
 						$scope.error = false;
 						$scope.isProcessing = true;
-						jobcontrolService.startDesktop(job, function(jobId) {
-							jobcontrolEventService.triggerUpdate(function() {
+						StrudelCore.jobControl.startDesktop(job, function(jobId) {
+							StrudelCore.jobControl.refreshJobList(function() {
 								$scope.isProcessing = false;
 								dialog.close();
 							});
