@@ -79,7 +79,7 @@ public class JobManager extends StateMonitor<JobListObject> {
                 public void onSuccess(JobTunnelMap newJobMap) {
                     jobListUpdateInProgress = false;
 
-                    if (currentJobListObject == null && lastJobListObject != null) {
+                    if (currentJobListObject == null) {
                         triggerStateChangeEvent(lastJobListObject, lastJobListObject);
                     } else if (currentJobListObject.length() != lastJobListObject.length()) {
                         triggerStateChangeEvent(currentJobListObject, lastJobListObject);
@@ -87,9 +87,9 @@ public class JobManager extends StateMonitor<JobListObject> {
                         for (int i = 0; i < currentJobListObject.length(); i++) {
                             JobObject jobA = currentJobListObject.get(i);
                             JobObject jobB = lastJobListObject.get(i);
-                            if (jobA.getJobName() != jobB.getJobName() ||
-                                    jobA.getJobId() != jobB.getJobId() ||
-                                    jobA.getState() != jobB.getState()) {
+                            if (!jobA.getJobName().equals(jobB.getJobName()) ||
+                                    !jobA.getJobId().equals(jobB.getJobId()) ||
+                                    !jobA.getState().equals(jobB.getState())) {
                                 triggerStateChangeEvent(currentJobListObject, lastJobListObject);
                             }
                         }
