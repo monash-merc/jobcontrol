@@ -19,7 +19,7 @@ import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
  */
 public class SessionManager implements HttpSessionListener {
 	
-	private static Map<String,HttpSession> sessionMap = new HashMap<String,HttpSession>();
+	private static final Map<String,HttpSession> sessionMap = new HashMap<String,HttpSession>();
 	
 	public static HttpSession getSessionById(String id) {
 		return sessionMap.get(id);

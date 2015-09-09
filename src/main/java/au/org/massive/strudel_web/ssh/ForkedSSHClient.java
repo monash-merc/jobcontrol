@@ -33,7 +33,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
 	
 	private final CertAuthInfo authInfo;
 	
-	public ForkedSSHClient(CertAuthInfo authInfo, String remoteHost) throws IOException {
+	public ForkedSSHClient(CertAuthInfo authInfo, String remoteHost) {
 		super(authInfo, remoteHost);
 		this.authInfo = authInfo;
 	}

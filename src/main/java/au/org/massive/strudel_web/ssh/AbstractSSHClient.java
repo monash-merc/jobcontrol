@@ -51,8 +51,7 @@ public abstract class AbstractSSHClient implements SSHClient {
 	}
 	
 	@Override
-	public AsyncCommand<String> execAsync(final String remoteCommands)
-			throws InterruptedException, IOException, SSHExecException {
+	public AsyncCommand<String> execAsync(final String remoteCommands) {
 		final ExecuteWatchdog watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
 		return new AsyncCommand<String>(watchdog, getExecutorService().submit(new Callable<String>(){
 

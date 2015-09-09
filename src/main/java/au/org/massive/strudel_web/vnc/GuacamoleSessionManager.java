@@ -23,7 +23,7 @@ import au.org.massive.strudel_web.ssh.Tunnel;
  */
 public class GuacamoleSessionManager implements ServletContextListener {
 	
-	private static Settings settings = Settings.getInstance();
+	private static final Settings settings = Settings.getInstance();
 	
 	private static Map<Integer,Tunnel> sshTunnels;
 	private static Timer tunnelCleaner;
@@ -98,14 +98,14 @@ public class GuacamoleSessionManager implements ServletContextListener {
 		}
 	}
 	
-	protected static int startTunnel(String remoteHost, int remotePort, Session session) throws IOException {
+	private static int startTunnel(String remoteHost, int remotePort, Session session) throws IOException {
 		ForkedSSHClient sshClient = new ForkedSSHClient(session.getCertificate(), remoteHost);
 		Tunnel t = sshClient.startTunnel(remotePort, 0);
 		sshTunnels.put(t.getLocalPort(), t);
 		return t.getLocalPort();
 	}
 	
-	protected static boolean stopTunnel(int guacdPort) {
+	private static boolean stopTunnel(int guacdPort) {
 		if (sshTunnels.containsKey(guacdPort)) {
 			Tunnel t = sshTunnels.get(guacdPort);
 			if (t.isRunning()) {

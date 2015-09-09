@@ -18,7 +18,7 @@ import au.org.massive.strudel_web.Settings;
  *
  */
 public class GuacamoleDB {
-	private static Settings settings = Settings.getInstance();
+	private static final Settings settings = Settings.getInstance();
 	
 	// JDBC driver name and database URL
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
@@ -26,7 +26,7 @@ public class GuacamoleDB {
 	private static final String USER = settings.getGuacMySQLUserName();
 	private static final String PASSWORD = settings.getGuacMySQLPassword();
 	
-	public GuacamoleDB() {
+	private GuacamoleDB() {
 		try {
 			Class.forName(JDBC_DRIVER);
 		} catch (ClassNotFoundException e) {
@@ -34,7 +34,7 @@ public class GuacamoleDB {
 		}
 	}
 	
-	public Connection getConnection() throws SQLException {
+	private Connection getConnection() throws SQLException {
 		return DriverManager.getConnection(DB_URL, USER, PASSWORD);
 	}
 

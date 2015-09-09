@@ -24,7 +24,7 @@ import org.apache.oltu.oauth2.jwt.io.JWTReader;
  */
 public class OAuthService {
 	
-	private static Settings settings = Settings.getInstance();
+	private static final Settings settings = Settings.getInstance();
 	
 	private OAuthService() {
 		

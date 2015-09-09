@@ -17,8 +17,8 @@ import java.util.List;
 public abstract class StateMonitor<T extends State> extends Timer {
 
     private static final int DEFAULT_POLL_RATE = 5000; // ms per poll
-    private int pollRate;
-    private List<StateChangeHandler<T>> stateChangeHandlers;
+    private final int pollRate;
+    private final List<StateChangeHandler<T>> stateChangeHandlers;
 
     public StateMonitor() {
         this(DEFAULT_POLL_RATE);
