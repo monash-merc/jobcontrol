@@ -18,7 +18,7 @@ import au.org.massive.strudel_web.vnc.GuacamoleSession;
  */
 public class Session {
 	
-	private HttpSession session;
+	private final HttpSession session;
 	
 	public Session(String sessionId) throws NoSuchSessionException {
 		session = SessionManager.getSessionById(sessionId);

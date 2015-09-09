@@ -17,7 +17,8 @@ public abstract class Exports {
 
     private static class NativeAsyncCallback<T extends JavaScriptObject> implements AsyncCallback<T> {
 
-        private JavaScriptObject jsCallbackSuccess, jsCallbackFailure;
+        private final JavaScriptObject jsCallbackSuccess;
+        private final JavaScriptObject jsCallbackFailure;
 
         public NativeAsyncCallback(JavaScriptObject jsCallbackSuccess, JavaScriptObject jsCallbackFailure) {
             this.jsCallbackSuccess = jsCallbackSuccess;
@@ -49,7 +50,7 @@ public abstract class Exports {
     }
 
     // ***** Session methods *****
-    public static abstract class Session {
+    private static abstract class Session {
         public static String loginStatus() {
             return SessionManager.getInstance().currentState().toString();
         }
@@ -92,7 +93,7 @@ public abstract class Exports {
     }
 
     // ***** Job control methods *****
-    public static abstract class JobControl {
+    private static abstract class JobControl {
         public static JobListObject getJobList() {
             return JobManager.getInstance().getCurrentJobList();
         }

@@ -39,7 +39,7 @@ import com.google.gson.Gson;
  */
 public class KeyService {
 	
-	private static Settings settings = Settings.getInstance();
+	private static final Settings settings = Settings.getInstance();
 	
 	private KeyService() {
 		

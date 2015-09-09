@@ -46,7 +46,7 @@ import com.google.gson.Gson;
 @Path("/")
 public class JobControlEndpoints extends Endpoint{
 	
-	private static Settings settings = Settings.getInstance();
+	private static final Settings settings = Settings.getInstance();
 	
 	/**
 	 * Gets (and creates, if necessary) a session and returns the id and whether the session

@@ -8,7 +8,7 @@ public enum SessionState implements State {
     LOGGED_IN_AWAITING_CERTIFICATE("LOGGED_IN_AWAITING_CERTIFICATE"),
     LOGGED_IN("LOGGED_IN");
 
-    private String stringValue;
+    private final String stringValue;
     SessionState(String stringValue) {
         this.stringValue = stringValue;
     }

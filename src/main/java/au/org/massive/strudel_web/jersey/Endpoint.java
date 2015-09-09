@@ -14,7 +14,7 @@ import au.org.massive.strudel_web.Session;
  */
 public abstract class Endpoint {
 	
-	protected Session getSession(HttpServletRequest request) throws IOException {
+	protected Session getSession(HttpServletRequest request) {
 		return new Session(request);
 	}
 	

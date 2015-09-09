@@ -17,7 +17,7 @@ public interface SSHClient {
 	// TODO: ExecuteWatchdog should not be here, because it implies a forked process.
 	public String exec(String remoteCommands, ExecuteWatchdog watchdog) throws IOException, SSHExecException;
 	
-	public AsyncCommand<String> execAsync(String remoteCommands) throws InterruptedException, IOException, SSHExecException;
+	public AsyncCommand<String> execAsync(String remoteCommands);
 	
 	public class AsyncCommand<T> {
 		private final ExecuteWatchdog watchdog;

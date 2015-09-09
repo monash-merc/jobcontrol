@@ -4,8 +4,8 @@ import com.google.gwt.core.client.js.JsType;
 
 @JsType
 public class User {
-    private String userName;
-    private String emailAddress;
+    private final String userName;
+    private final String emailAddress;
 
     public User(String userName, String emailAddress) {
         this.userName = userName;
