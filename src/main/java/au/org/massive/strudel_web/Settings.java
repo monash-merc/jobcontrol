@@ -1,11 +1,11 @@
 package au.org.massive.strudel_web;
 
+import au.org.massive.strudel_web.job_control.StrudelSystemConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
-import au.org.massive.strudel_web.job_control.JobConfiguration;
-import au.org.massive.strudel_web.job_control.StrudelJobConfiguration;
+import au.org.massive.strudel_web.job_control.TaskConfiguration;
 
 /**
  * Provides settings for the application. Requires "strudel-web.properties" to be in the class path.
@@ -22,7 +22,7 @@ public class Settings {
 	private final String OAUTH_CLIENT_SECRET;
 	private final String OAUTH_REDIRECT;
 	private final String SSH_API_ENDPOINT;
-	private final JobConfiguration JOB_CONFIGURATION;
+	private final TaskConfiguration JOB_CONFIGURATION;
 	private final String GUACD_HOST;
 	private final String GUAC_MYSQL_HOST;
 	private final int GUAC_MYSQL_PORT;
@@ -43,7 +43,7 @@ public class Settings {
 			OAUTH_REDIRECT = config.getString("oauth-redirect");
 			
 			SSH_API_ENDPOINT = config.getString("ssh-api-endpoint");
-			JOB_CONFIGURATION = new StrudelJobConfiguration(config.getString("login-host"));
+			JOB_CONFIGURATION = new StrudelSystemConfiguration(config.getString("login-host"));
 			
 			GUACD_HOST = config.getString("guacd-host", "localhost");
 			GUAC_MYSQL_HOST = config.getString("guac-mysql-host", "localhost");
@@ -88,7 +88,7 @@ public class Settings {
 		return SSH_API_ENDPOINT;
 	}
 
-	public JobConfiguration getJobConfiguration() {
+	public TaskConfiguration getJobConfiguration() {
 		return JOB_CONFIGURATION;
 	}
 	

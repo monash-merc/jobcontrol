@@ -17,6 +17,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
+import au.org.massive.strudel_web.job_control.NoSuchTaskTypeException;
+import au.org.massive.strudel_web.job_control.TaskConfiguration;
 import au.org.massive.strudel_web.vnc.GuacamoleDB;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
@@ -27,10 +29,9 @@ import au.org.massive.strudel_web.Session;
 import au.org.massive.strudel_web.SessionManager;
 import au.org.massive.strudel_web.Settings;
 import au.org.massive.strudel_web.UnauthorizedException;
-import au.org.massive.strudel_web.job_control.JobFactory;
-import au.org.massive.strudel_web.job_control.MissingRequiredJobParametersException;
-import au.org.massive.strudel_web.job_control.NoSuchJobTypeException;
-import au.org.massive.strudel_web.job_control.JobFactory.Job;
+import au.org.massive.strudel_web.job_control.TaskFactory;
+import au.org.massive.strudel_web.job_control.MissingRequiredTaskParametersException;
+import au.org.massive.strudel_web.job_control.TaskFactory.Task;
 import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
@@ -145,8 +146,8 @@ public class JobControlEndpoints extends Endpoint{
     }
     
     /**
-     * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link au.org.massive.strudel_web.job_control.JobConfiguration} object.
-     * @param job
+     * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
+     * @param task
      * @param request
      * @param response
      * @return the result of the command
@@ -154,18 +155,18 @@ public class JobControlEndpoints extends Endpoint{
      * @throws SSHExecException
      */
     @GET
-    @Path("/execute/{job}/")
+    @Path("/execute/{task}/")
     @Produces("application/json")
-    public String executeJob(@PathParam("job") String job, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
+    public String executeJob(@PathParam("task") String task, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
     	Session session = getSessionWithCertificateOrSendError(request, response);
     	if (session == null) {
     		return null;
     	}
     	
-    	Job remoteJob;
+    	Task remoteTask;
 		try {
-			remoteJob = new JobFactory(settings.getJobConfiguration()).getInstance(job, session);
-		} catch (NoSuchJobTypeException e) {
+			remoteTask = new TaskFactory(settings.getJobConfiguration()).getInstance(task, session);
+		} catch (NoSuchTaskTypeException e) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return null;
 		}
@@ -177,8 +178,8 @@ public class JobControlEndpoints extends Endpoint{
     	}
     	
     	try {
-			return remoteJob.runJsonResult(parameters);
-		} catch (MissingRequiredJobParametersException e) {
+			return remoteTask.runJsonResult(parameters);
+		} catch (MissingRequiredTaskParametersException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 			return null;
 		}

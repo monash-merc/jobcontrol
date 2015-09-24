@@ -3,12 +3,8 @@ package au.org.massive.strudel_web.gwt.client;
 import au.org.massive.strudel_web.gwt.client.js_overlay_types.DesktopJobParametersObject;
 import au.org.massive.strudel_web.gwt.client.js_overlay_types.JobListObject;
 import au.org.massive.strudel_web.gwt.client.js_overlay_types.VncPasswordObject;
-import au.org.massive.strudel_web.job_control.JobFactory;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.thirdparty.streamhtmlparser.JavascriptParser;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import org.apache.tools.ant.taskdefs.Java;
 
 /**
  * Created by jason on 5/08/15.
@@ -91,7 +87,7 @@ public abstract class Exports {
         }
     }
 
-    // ***** Job control methods *****
+    // ***** Task control methods *****
     public static abstract class JobControl {
         public static JobListObject getJobList() {
             return JobManager.getInstance().getCurrentJobList();
