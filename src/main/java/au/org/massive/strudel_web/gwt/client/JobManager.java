@@ -176,7 +176,7 @@ public class JobManager extends StateMonitor<JobListObject> {
                                 +"&display="+tunnelCredentials.getDisplay()
                                 +"&remotehost="+tunnelCredentials.getExecHost()
                                 +"&vncpassword="+tunnelCredentials.getPassword();
-                        AjaxUtils.<JavaScriptObject>getData(url, new AsyncCallback<JavaScriptObject>() {
+                        AjaxUtils.getData(url, new AsyncCallback<JavaScriptObject>() {
                             @Override
                             public void onFailure(Throwable throwable) {
                                 error(throwable);
@@ -191,7 +191,7 @@ public class JobManager extends StateMonitor<JobListObject> {
                 }
             };
 
-            AjaxUtils.<ExecHostObject>getData(EXEC_HOST_URL+"?jobid="+j.getJobId(), new AsyncCallback<ExecHostObject>() {
+            AjaxUtils.getData(EXEC_HOST_URL + "?jobid=" + j.getJobId(), new AsyncCallback<ExecHostObject>() {
                 @Override
                 public void onFailure(Throwable throwable) {
                     error(throwable);
@@ -204,7 +204,7 @@ public class JobManager extends StateMonitor<JobListObject> {
                 }
             });
 
-            AjaxUtils.<VncDisplayObject>getData(VNC_DISPLAY_URL+"?jobid="+j.getJobId(), new AsyncCallback<VncDisplayObject>() {
+            AjaxUtils.getData(VNC_DISPLAY_URL + "?jobid=" + j.getJobId(), new AsyncCallback<VncDisplayObject>() {
                 @Override
                 public void onFailure(Throwable throwable) {
                     error(throwable);
@@ -217,7 +217,7 @@ public class JobManager extends StateMonitor<JobListObject> {
                 }
             });
 
-            AjaxUtils.<VncPasswordObject>getData(VNC_PASSWORD_URL+"?jobid="+j.getJobId(), new AsyncCallback<VncPasswordObject>() {
+            AjaxUtils.getData(VNC_PASSWORD_URL + "?jobid=" + j.getJobId(), new AsyncCallback<VncPasswordObject>() {
                 @Override
                 public void onFailure(Throwable throwable) {
                     error(throwable);
@@ -249,11 +249,11 @@ public class JobManager extends StateMonitor<JobListObject> {
     }
 
     private void getJobList(final AsyncCallback<JobListObject> callback) {
-        AjaxUtils.<JobListObject>getData(LIST_JOBS_URL, callback);
+        AjaxUtils.getData(LIST_JOBS_URL, callback);
     }
 
     private void getTunnelList(final AsyncCallback<VncTunnelListObject> callback) {
-        AjaxUtils.<VncTunnelListObject>getData(LIST_TUNNELS_URL, callback);
+        AjaxUtils.getData(LIST_TUNNELS_URL, callback);
     }
 
     public JobListObject getCurrentJobList() {
@@ -274,23 +274,23 @@ public class JobManager extends StateMonitor<JobListObject> {
                 +"&nodes="+params.getNodes()
                 +"&ppn="+params.getPpn()
                 +"&queue="+ URL.encodeQueryString(params.getQueue());
-        AjaxUtils.<JavaScriptObject>getData(START_DESKTOP_URL+urlParams, callback);
+        AjaxUtils.getData(START_DESKTOP_URL + urlParams, callback);
     }
 
     public void stopJob(int jobId, AsyncCallback<JavaScriptObject> callback) {
         String urlParams = "?jobid="+jobId;
-        AjaxUtils.<JavaScriptObject>getData(STOP_DESKTOP_URL+urlParams, callback);
+        AjaxUtils.getData(STOP_DESKTOP_URL + urlParams, callback);
     }
 
     public void getVncPassword(int jobId, AsyncCallback<VncPasswordObject> callback) {
         String urlParams = "?jobid="+jobId;
-        AjaxUtils.<VncPasswordObject>getData(GET_VNC_PASSWORD_URL+urlParams, callback);
+        AjaxUtils.getData(GET_VNC_PASSWORD_URL + urlParams, callback);
     }
 
     public void updateVncTunnelPassword(String desktopName, String password, AsyncCallback<JavaScriptObject> callback) {
         String urlParams = "?desktopname="+URL.encodeQueryString(desktopName)
                 +"&vncpassword="+URL.encodeQueryString(password);
-        AjaxUtils.<JavaScriptObject>getData(UPDATE_VNC_TUNNEL_PASSWORD+urlParams, callback);
+        AjaxUtils.getData(UPDATE_VNC_TUNNEL_PASSWORD + urlParams, callback);
     }
 
 }

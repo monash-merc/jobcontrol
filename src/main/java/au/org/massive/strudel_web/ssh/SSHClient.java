@@ -12,14 +12,14 @@ import org.apache.commons.exec.ExecuteWatchdog;
  */
 public interface SSHClient {
 	
-	public String exec(String remoteCommands) throws IOException, SSHExecException;
+	String exec(String remoteCommands) throws IOException, SSHExecException;
 
 	// TODO: ExecuteWatchdog should not be here, because it implies a forked process.
-	public String exec(String remoteCommands, ExecuteWatchdog watchdog) throws IOException, SSHExecException;
+	String exec(String remoteCommands, ExecuteWatchdog watchdog) throws IOException, SSHExecException;
 	
-	public AsyncCommand<String> execAsync(String remoteCommands);
+	AsyncCommand<String> execAsync(String remoteCommands);
 	
-	public class AsyncCommand<T> {
+	class AsyncCommand<T> {
 		private final ExecuteWatchdog watchdog;
 		private final Future<T> future;
 		public AsyncCommand(ExecuteWatchdog watchdog, Future<T> future) {

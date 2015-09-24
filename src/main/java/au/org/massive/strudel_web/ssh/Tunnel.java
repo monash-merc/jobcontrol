@@ -6,9 +6,9 @@ package au.org.massive.strudel_web.ssh;
  *
  */
 public interface Tunnel {
-	public int getLocalPort();
-	public int getRemotePort();
-	public String getRemoteHost();
-	public void stopTunnel();
-	public boolean isRunning();
+	int getLocalPort();
+	int getRemotePort();
+	String getRemoteHost();
+	void stopTunnel();
+	boolean isRunning();
 }

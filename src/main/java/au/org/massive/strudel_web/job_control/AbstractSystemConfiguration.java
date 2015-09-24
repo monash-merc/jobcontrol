@@ -32,33 +32,7 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
 			String[] requiredParams, String commandPattern, String resultPattern) {
 		addConfiguration(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern, new LinkedList<CommandPostprocessor>());
 	}
-	
-	protected void addConfiguration(String jobName, Map<String,String> defaults,
-			Set<String> requiredParams, String commandPattern, String resultPattern) {
-		addConfiguration(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern, new LinkedList<CommandPostprocessor>());
-	}
-	
-	protected void addConfiguration(String host, String jobName, Map<String,String> defaults,
-			String[] requiredParams, String commandPattern, String resultPattern) {
-		addConfiguration(host, jobName, defaults, requiredParams, commandPattern, resultPattern, new LinkedList<CommandPostprocessor>());
-	}
-	
-	protected void addConfiguration(String host, String jobName, Map<String,String> defaults,
-			Set<String> requiredParams, String commandPattern, String resultPattern) {
-		configurations.put(jobName,
-				new TaskParameters(host, commandPattern, resultPattern, defaults, requiredParams, new LinkedList<CommandPostprocessor>()));
-	}
-	
-	protected void addConfiguration(String jobName, Map<String,String> defaults,
-			String[] requiredParams, String commandPattern, String resultPattern, List<CommandPostprocessor> postprocessors) {
-		addConfiguration(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern, postprocessors);
-	}
-	
-	protected void addConfiguration(String jobName, Map<String,String> defaults,
-			Set<String> requiredParams, String commandPattern, String resultPattern, List<CommandPostprocessor> postprocessors) {
-		addConfiguration(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern, postprocessors);
-	}
-	
+
 	protected void addConfiguration(String host, String jobName, Map<String,String> defaults,
 			String[] requiredParams, String commandPattern, String resultPattern, List<CommandPostprocessor> postprocessors) {
 		

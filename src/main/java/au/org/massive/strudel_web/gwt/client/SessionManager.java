@@ -54,7 +54,7 @@ public class SessionManager extends StateMonitor<SessionState> {
     }
 
     private void triggerSessionRefresh(final AsyncCallback<SessionState> callback) {
-        AjaxUtils.<SessionStateObject>getData(SESSION_STATE_URL, new AsyncCallback<SessionStateObject>() {
+        AjaxUtils.getData(SESSION_STATE_URL, new AsyncCallback<SessionStateObject>() {
             @Override
             public void onFailure(Throwable throwable) {
                 sessionUpdateInProgress = false;
@@ -79,7 +79,7 @@ public class SessionManager extends StateMonitor<SessionState> {
     }
 
     private void triggerCertificateSigningRequest() {
-        AjaxUtils.<JavaScriptObject>getData(CERT_SIGNING_URL, new AsyncCallback<JavaScriptObject>() {
+        AjaxUtils.getData(CERT_SIGNING_URL, new AsyncCallback<JavaScriptObject>() {
             @Override
             public void onFailure(Throwable throwable) {
                 certSigningError(throwable);
@@ -93,7 +93,7 @@ public class SessionManager extends StateMonitor<SessionState> {
     }
 
     public void invalidateSession() {
-        AjaxUtils.<JavaScriptObject>getData(LOGOUT_URL, new AsyncCallback<JavaScriptObject>() {
+        AjaxUtils.getData(LOGOUT_URL, new AsyncCallback<JavaScriptObject>() {
 
             @Override
             public void onFailure(Throwable throwable) {

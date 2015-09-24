@@ -12,5 +12,5 @@ import java.util.Map;
  *
  */
 public interface CommandPostprocessor {
-	public List<Map<String,String>> process(List<Map<String,String>> input);
+	List<Map<String,String>> process(List<Map<String, String>> input);
 }
