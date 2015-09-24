@@ -16,6 +16,7 @@ public class JobParameters {
 	private final Map<String,String> defaultParams;
 	private final Set<String> requiredParams;
 	private final List<CommandPostprocessor> postprocessors;
+
 	public JobParameters(String remoteHost, String commandPattern,
 			String resultRegexPattern, Map<String,String> defaultParams,
 			Set<String> requiredParams, List<CommandPostprocessor> postprocessors) {

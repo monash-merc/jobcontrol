@@ -81,9 +81,12 @@ public abstract class AbstractJobConfiguration implements JobConfiguration {
 		if (requiredParams == null) {
 			requiredParams = new HashSet<String>();
 		}
-		
-		configurations.put(jobName,
-				new JobParameters(host, commandPattern, resultPattern, defaults, requiredParams, postprocessors));
+
+		addConfiguration(jobName, new JobParameters(host, commandPattern, resultPattern, defaults, requiredParams, postprocessors));
+	}
+
+	protected void addConfiguration(String jobName, JobParameters job) {
+		configurations.put(jobName, job);
 	}
 	
 	@Override
