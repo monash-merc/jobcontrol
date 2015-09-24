@@ -20,13 +20,13 @@ angular.module('jobcontrolApp')
             if (toState.name === "login" && sessionManagerService.isLoggedIn()) {
                 e.preventDefault();
                 $state.go("home");
-                return;
+
             } else if (toState.name === "login") {
-                return;
+
             } else if (!sessionManagerService.isLoggedIn()) {
                 e.preventDefault();
                 $state.go("login");
-                return;
+
             }
         });
     });

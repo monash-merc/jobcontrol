@@ -74,7 +74,7 @@ public class KeyService {
 			OutputStreamWriter out = new OutputStreamWriter(buf);
 			JcaPEMWriter pemWriter = new JcaPEMWriter(out);
 			try {
-				pemWriter.writeObject((RSAPrivateKey) key);
+				pemWriter.writeObject(key);
 				pemWriter.close();
 				out.close();
 				keyString = new String(buf.toByteArray());
