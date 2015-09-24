@@ -1,0 +1,33 @@
+<md-content layout="row" flex layout-align="center center" class="md-padding">
+    <md-card flex layout="column" style="max-width: 521px;">
+        <md-toolbar class="md-whiteframe-z1 md-accent">
+            <div class="md-toolbar-tools">
+                <h2>Select a remote system</h2>
+            </div>
+        </md-toolbar>
+        <md-card-content>
+            <md-input-container>
+                <label>Remote system</label>
+                <md-tooltip>
+                    Select a remote system you have access to and click "login" to begin running desktops!
+                </md-tooltip>
+                <md-select ng-model="loginService" ng-disabled="showSpinner()">
+                    <md-option ng-repeat="service in authBackends" value="{{ service }}">
+                        {{ service }}
+                    </md-option>
+                </md-select>
+            </md-input-container>
+            <div layout="row" layout-align="center center">
+                <span style="width: 20px;" ng-if="showSpinner()"></span>
+                <md-button class="md-primary md-raised" ng-disabled="loginButtonDisabled(loginService)"
+                           ng-click="startLogin(loginService)">Login
+                </md-button>
+                <md-progress-circular
+                        ng-if="showSpinner()"
+                        md-mode="indeterminate"
+                        md-diameter="20px"
+                        style="margin: -20px -40px 0px -40px; height: 20px;"></md-progress-circular>
+            </div>
+        </md-card-content>
+    </md-card>
+</md-content>
