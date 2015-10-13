@@ -1,0 +1,186 @@
+<div layout="row" flex>
+    <md-sidenav class="md-sidenav-left md-whiteframe-z3" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
+        <md-toolbar layout="row" md-scroll-shrink>
+            <div class="md-toolbar-tools">
+                <md-button class="md-icon-button" ng-click="menuToggle()" hide-gt-md>
+                    <md-icon md-font-set="material-icons">arrow_back</md-icon>
+                </md-button>
+                <span flex></span><span class="user-details">{{ session.email }}</span>
+            </div>
+        </md-toolbar>
+        <md-content layout="column">
+            <section ng-repeat="(facility, config) in configuration">
+                <md-subheader class="md-accent facility-heading">{{ facility }}</md-subheader>
+                <md-list layout-padding>
+                    <md-list-item ng-repeat="(configName, configData) in config">
+                        <md-button
+                                ng-click="$parent.selected = configName; setSelectedConfiguration(configName, configData); menuToggle(); refreshDesktopList(selectedConfiguration, session.uid);"
+                                ng-class="{ 'md-raised md-primary': $parent.selected == configName }"
+                                ng-disabled="desktopLaunchInProgress()" flex>
+                            <div layout="row" flex>{{ configName }}<span flex></span>
+                                <md-icon md-font-set="material-icons">chevron_right</md-icon>
+                            </div>
+                        </md-button>
+                    </md-list-item>
+                </md-list>
+            </section>
+        </md-content>
+    </md-sidenav>
+    <div layout="column" class="view-container" flex>
+        <md-toolbar layout="row" class="md-primary md-hue-1 md-whiteframe-z2">
+            <div class="md-toolbar-tools">
+                <md-button class="md-icon-button md-primary" ng-click="menuToggle()" aria-label="Show menu" hide-gt-md>
+                    <md-icon md-font-set="material-icons">menu</md-icon>
+                </md-button>
+                {{ selectedConfiguration.name }}
+                <span flex></span>
+                <md-button ng-click="doSignout()">Sign out</md-button>
+            </div>
+        </md-toolbar>
+        <md-content layout-align="start center" class="md-padding" flex>
+            <md-card ng-if="!selectedConfiguration" layout="column">
+                <md-toolbar class="md-whiteframe-z1 md-primary md-hue-3">
+                    <div class="md-toolbar-tools">
+                        <h3>Getting started</h3>
+                    </div>
+                </md-toolbar>
+                <md-card-content>
+                    <p>To get started, select a configuration from the menu on the left-hand side.</p>
+
+                    <p hide-gt-md>Can't see the menu? Click the
+                        <md-icon md-font-set="material-icons">menu</md-icon>
+                        button.
+                    </p>
+                </md-card-content>
+            </md-card>
+
+
+            <div ng-if="selectedConfiguration">
+
+                <md-card layout="column" ng-init="expandLaunchForm = true">
+                    <md-toolbar class="md-whiteframe-z1 md-primary md-hue-3">
+                        <div class="md-toolbar-tools" layout="row">
+                            <md-button class="md-icon-button" ng-click="expandLaunchForm = !expandLaunchForm">
+                                <md-icon md-font-set="material-icons" ng-if="!expandLaunchForm">expand_more
+                                    <md-tooltip>Show more</md-tooltip>
+                                </md-icon>
+                                <md-icon md-font-set="material-icons" ng-if="expandLaunchForm">expand_less
+                                    <md-tooltip>Hide</md-tooltip>
+                                </md-icon>
+                            </md-button>
+                            <h3>Launch a desktop</h3><span flex></span>
+                        </div>
+                    </md-toolbar>
+                    <md-card-content layout="column" ng-show="expandLaunchForm">
+                        <div layout="row" flex>
+                            <span flex></span>
+
+                            <div layout-gt-lg="row" layout="column">
+                                <div layout="row" layout-sm="column">
+                                    <md-input-container>
+                                        <label>Nodes</label>
+                                        <input required type="number" min="1" ng-model="newDesktop.nodes"
+                                               ng-disabled="desktopLaunchInProgress()">
+                                    </md-input-container>
+                                    <md-input-container>
+                                        <label>Processors per node</label>
+                                        <input required type="number" min="1" ng-model="newDesktop.ppn"
+                                               ng-disabled="desktopLaunchInProgress()">
+                                    </md-input-container>
+                                </div>
+                                <div layout="row" layout-sm="column">
+                                    <md-input-container>
+                                        <label>Memory (gb)</label>
+                                        <input required type="number" min="1" ng-model="newDesktop.mem"
+                                               ng-disabled="desktopLaunchInProgress()">
+                                    </md-input-container>
+                                    <md-input-container>
+                                        <label>Time (hours)</label>
+                                        <input required type="number" min="1" ng-model="newDesktop.hours"
+                                               ng-disabled="desktopLaunchInProgress()">
+                                    </md-input-container>
+                                </div>
+                            </div>
+                            <span flex></span>
+                        </div>
+                        <div layout="row" layout-align="center center">
+                            <span style="width: 20px;" ng-if="desktopLaunchInProgress()"></span>
+                            <md-button class="md-accent" ng-disabled="desktopLaunchInProgress()"
+                                       ng-click="launchDesktop(newDesktop, selectedConfiguration, session.uid)">Launch
+                            </md-button>
+                            <md-progress-circular
+                                    ng-if="desktopLaunchInProgress()"
+                                    md-mode="indeterminate"
+                                    md-diameter="20px"
+                                    style="margin: -20px -40px 0px -40px; height: 20px;"></md-progress-circular>
+                        </div>
+                    </md-card-content>
+                </md-card>
+
+                <md-card layout="column" class="wide-card" ng-init="expandDesktopList = true">
+                    <md-toolbar class="md-whiteframe-z1 md-primary md-hue-3">
+                        <div class="md-toolbar-tools" layout="row">
+                            <md-button class="md-icon-button" ng-click="expandDesktopList = !expandDesktopList">
+                                <md-icon md-font-set="material-icons" ng-if="!expandDesktopList">expand_more
+                                    <md-tooltip>Show more</md-tooltip>
+                                </md-icon>
+                                <md-icon md-font-set="material-icons" ng-if="expandDesktopList">expand_less
+                                    <md-tooltip>Hide</md-tooltip>
+                                </md-icon>
+                            </md-button>
+                            <h3>Running desktops</h3><span flex></span>
+                            <md-button class="md-icon-button"
+                                       ng-if="expandDesktopList && !desktopListRefreshInProgress()"
+                                       ng-click="refreshDesktopList(selectedConfiguration, session.uid)">
+                                <md-icon md-font-set="material-icons">refresh
+                                    <md-tooltip>Refresh list</md-tooltip>
+                                </md-icon>
+                            </md-button>
+                            <div ng-if="desktopListRefreshInProgress()">
+                                <md-progress-circular md-mode="indeterminate" md-diameter="20px"
+                                                      style="margin: -15px -35px 0px -40px; height: 20px;"></md-progress-circular>
+                                <md-tooltip>Refreshing...</md-tooltip>
+                            </div>
+                        </div>
+                    </md-toolbar>
+                    <md-card-content layout="column" ng-show="expandDesktopList">
+                        <p ng-if="!runningDesktops || runningDesktops.length === 0">You currently have no running
+                            desktops.</p>
+                        <table ng-if="runningDesktops && runningDesktops.length > 0" layout-fill>
+                            <thead>
+                            <tr>
+                                <th flex="10" style="text-align: center">#</th>
+                                <th flex="40" style="text-align: left">Time remaining</th>
+                                <th flex="10" style="text-align: center">State</th>
+                                <th flex="40"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="desktop in runningDesktops">
+                                <td style="text-align: center">{{ desktop.jobid }}</td>
+                                <td style="text-align: left">{{ desktop.remainingWalltime }}</td>
+                                <td style="text-align: center">
+                                    <md-icon md-font-set="material-icons" ng-if="desktop.running">done</md-icon>
+                                    <md-icon md-font-set="material-icons" ng-if="!desktop.running">report_problem
+                                    </md-icon>
+                                </td>
+                                <td>
+                                    <md-button class="md-primary"
+                                               ng-click="showDesktop(selectedConfiguration, desktop.jobid)"
+                                               ng-disabled="!desktop.running">Show desktop
+                                    </md-button>
+                                    <md-button class="md-warn"
+                                               ng-click="stopDesktop($event, selectedConfiguration, desktop.jobid)">Stop
+                                        desktop
+                                    </md-button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </md-card-content>
+                </md-card>
+
+            </div>
+        </md-content>
+    </div>
+</div>

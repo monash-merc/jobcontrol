@@ -32,13 +32,7 @@ public class OAuthEndpoints extends Endpoint {
     public Response authorize(@Context HttpServletRequest req, @Context HttpServletResponse res) throws IOException {
     	// Extract token from state parameter (i.e. redirect URL)
 		try {
-    		Session session;
-			try {
-				session = new Session(getSessionIdFromRedirectUrl(req.getParameter("state")));
-			} catch (NoSuchSessionException e) {
-				res.sendError(HttpServletResponse.SC_BAD_REQUEST, "OAuth2 redirect error");
-				return null;
-			}
+    		Session session = new Session(req);
     		OAuthService.doTokenRequest(req, session);
 			return Response.seeOther(OAuthService.getAfterAuthRedirect(req)).build();
 		} catch (OAuthProblemException e) {
@@ -51,19 +45,4 @@ public class OAuthEndpoints extends Endpoint {
 		}
     	return Response.serverError().build();
     }
-	
-	private String getSessionIdFromRedirectUrl(String redirectUrl) {
-		final String searchString = "?token=";
-		int indexOfToken = redirectUrl.toLowerCase().indexOf(searchString);
-		if (indexOfToken < 0) {
-			return "";
-		}
-		
-		String token = redirectUrl.substring(indexOfToken+searchString.length());
-		if (token.contains("&")) {
-			token = token.split("&")[0];
-		}
-		
-		return token;
-	}
 }
