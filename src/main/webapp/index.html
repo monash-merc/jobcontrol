@@ -1,56 +1,56 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
+<!--[if lt IE 7]>
+<html lang="en" ng-app="strudelWeb" class="no-js lt-ie9 lt-ie8 lt-ie7" ng-cloak> <![endif]-->
+<!--[if IE 7]>
+<html lang="en" ng-app="strudelWeb" class="no-js lt-ie9 lt-ie8" ng-cloak> <![endif]-->
+<!--[if IE 8]>
+<html lang="en" ng-app="strudelWeb" class="no-js lt-ie9" ng-cloak> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en" ng-app="strudelWeb" class="no-js" ng-cloak> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Strudel Web</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="styles/ngDialog.min.css">
-    <link rel="stylesheet" href="styles/ngDialog-theme-default.min.css">
-    <link rel="stylesheet" href="styles/ngDialog-theme-plain.min.css">
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/angular-material/angular-material.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body layout="column" ng-controller="AppCtrl">
 
-  <body>
-    <iframe style="display:none; height:0; width:0; tabindex:-1;" id="hiddenIframe"></iframe>
-  	<div class="page-header">
-  		<h1>Strudel Web</h1>
-	</div>
 
-	<div ui-view></div>
-	
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-	<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-animate.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.2/angular-resource.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.15/angular-ui-router.min.js"></script>
-	<script src="scripts/ngDialog.min.js"></script>
-    <script src="scripts/app.js"></script>
-	<script src="scripts/routes.js"></script>
-	<script src="scripts/services/strudel-core.js"></script>
-    <script src="scripts/services/session-manager.js"></script>
-    <script src="scripts/services/jobcontrol-service.js"></script>
-    <script src="scripts/directives/job-list.js"></script>
-    <script src="views/desktop-list/controllers/desktoplist-controller.js"></script>
-	<script src="views/login/controllers/login-controller.js"></script>
+<!--[if lt IE 7]>
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+    your browser</a> to improve your experience.</p>
+<![endif]-->
 
-	<script type="text/javascript">
-		/**
-		 * This function is called by the GWT module when the application initialises
-		 */
-		function appReady() {
-			angular.bootstrap(document, ['jobcontrolApp']);
-		}
-	</script>
-  	<script src="strudelweb/strudelweb.nocache.js"></script>
-  </body>
-
+<md-toolbar layout="row" class="md-whiteframe-z4 md-hue-2">
+    <div class="md-toolbar-tools" layout="row">
+        <a href="#/desktop-manager" style="height: 90%;">
+            <img src="images/logo.png" style="height: 90%;"/>
+        </a>
+        <a href="#/desktop-manager">
+            <h1 class="md-padding"><span>Strudel Web</span></h1>
+        </a>
+    </div>
+</md-toolbar>
+<div ng-view layout="row" flex class="view-container"></div>
+<!-- In production use:
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+-->
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-resource/angular-resource.js"></script>
+<script src="bower_components/angular-aria/angular-aria.js"></script>
+<script src="bower_components/angular-animate/angular-animate.js"></script>
+<script src="bower_components/angular-material/angular-material.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+<script src="app.js"></script>
+<script src="system-selector/system-selector.js"></script>
+<script src="desktop-manager/desktop-manager.js"></script>
+<script src="desktop-viewer/desktop-viewer.js"></script>
+<script src="components/version/version.js"></script>
+<script src="components/version/version-directive.js"></script>
+<script src="components/version/interpolate-filter.js"></script>
+</body>
 </html>

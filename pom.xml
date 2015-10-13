@@ -12,8 +12,6 @@
 		<glassfish.version>3.1.1</glassfish.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Convenience property to set the GWT version -->
-		<gwtVersion>2.7.0</gwtVersion>
 		<!-- Note: GWT needs at least java 1.6 -->
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
@@ -33,43 +31,23 @@
                 </configuration>
             </plugin>
 
-			<!-- GWT Maven Plugin-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>gwt-maven-plugin</artifactId>
-				<version>${gwtVersion}</version>
+				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
 					<execution>
+						<phase>package</phase>
 						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-					<execution>
-						<!-- Run tests through gwt:test, this allows reusing the plugin configuration for GWTTestCases -->
-						<id>gwt-tests</id>
-						<phase>test</phase>
-						<goals>
-							<goal>test</goal>
+							<goal>exec</goal>
 						</goals>
 					</execution>
 				</executions>
-				<!-- Plugin configuration. There are many available options,
-                     see gwt-maven-plugin documentation at codehaus.org -->
 				<configuration>
-					<modules>
-						<module>au.org.massive.strudel_web.gwt.StrudelWeb</module>
-					</modules>
-					<!-- Use the new jsInterop -->
-					<jsInteropMode>JS</jsInteropMode>
-					<incremental>false</incremental>
-					<!-- URL that should be opened by DevMode (gwt:run). -->
-					<runTarget>index.html</runTarget>
-					<!-- Ask GWT to create the Story of Your Compile (SOYC) (gwt:compile) -->
-					<compileReport>true</compileReport>
-					<!-- Run tests using HtmlUnit -->
-					<mode>htmlunit</mode>
-					<!-- Tests patterns -->
-					<includes>**/Test*.java,**/*Test.java,**/*TestCase.java</includes>
+					<executable>bower</executable>
+					<arguments>
+						<argument>install</argument>
+					</arguments>
+					<workingDirectory>${basedir}/target/strudel-web/</workingDirectory>
 				</configuration>
 			</plugin>
         </plugins>
@@ -84,14 +62,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-			<dependency>
-				<groupId>com.google.gwt</groupId>
-				<artifactId>gwt</artifactId>
-				<version>${gwtVersion}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
         </dependencies>
     </dependencyManagement>
     
@@ -171,23 +141,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.35</version>
-		</dependency>
-
-		<!-- GWT client dependenceis -->
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-user</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-dev</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-codeserver</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		
         <dependency>

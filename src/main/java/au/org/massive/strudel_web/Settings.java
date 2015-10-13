@@ -1,118 +1,178 @@
 package au.org.massive.strudel_web;
 
-import au.org.massive.strudel_web.job_control.StrudelSystemConfiguration;
+import au.org.massive.strudel_web.job_control.*;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import sun.awt.image.ImageWatched;
 
-import au.org.massive.strudel_web.job_control.TaskConfiguration;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides settings for the application. Requires "strudel-web.properties" to be in the class path.
  * Settings objects are singletons, and configuration is loaded only once.
- * 
- * @author jrigby
  *
+ * @author jrigby
  */
 public class Settings {
-	
-	private final String OAUTH_AUTHORIZATION_ENDPOINT;
-	private final String OAUTH_TOKEN_ENDPOINT;
-	private final String OAUTH_CLIENT_ID;
-	private final String OAUTH_CLIENT_SECRET;
-	private final String OAUTH_REDIRECT;
-	private final String SSH_API_ENDPOINT;
-	private final TaskConfiguration JOB_CONFIGURATION;
-	private final String GUACD_HOST;
-	private final String GUAC_MYSQL_HOST;
-	private final int GUAC_MYSQL_PORT;
-	private final String GUAC_MYSQL_USER_NAME;
-	private final String GUAC_MYSQL_PASSWORD;
-	private final String GUAC_MYSQL_DB_NAME;
-	
-	private static Settings instance;
-	
-	private Settings() {
-		try {
-			Configuration config = new PropertiesConfiguration("strudel-web.properties");
-			
-			OAUTH_AUTHORIZATION_ENDPOINT = config.getString("oauth-authorization-endpoint");
-			OAUTH_TOKEN_ENDPOINT = config.getString("oauth-token-endpoint");
-			OAUTH_CLIENT_ID = config.getString("oauth-client-id");
-			OAUTH_CLIENT_SECRET = config.getString("oauth-client-secret");
-			OAUTH_REDIRECT = config.getString("oauth-redirect");
-			
-			SSH_API_ENDPOINT = config.getString("ssh-api-endpoint");
-			JOB_CONFIGURATION = new StrudelSystemConfiguration(config.getString("login-host"));
-			
-			GUACD_HOST = config.getString("guacd-host", "localhost");
-			GUAC_MYSQL_HOST = config.getString("guac-mysql-host", "localhost");
-			GUAC_MYSQL_PORT = config.getInt("guac-mysql-port", 3306);
-			GUAC_MYSQL_USER_NAME = config.getString("guac-mysql-user-name", "guacamole");
-			GUAC_MYSQL_PASSWORD = config.getString("guac-mysql-password");
-			GUAC_MYSQL_DB_NAME = config.getString("guac-mysql-db-name", "guacamole");
-			
-		} catch (ConfigurationException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static Settings getInstance() {
-		if (instance == null) {
-			instance = new Settings();
-		}
-		return instance;
-	}
 
-	public String getOAuthAuthorizationEndpoint() {
-		return OAUTH_AUTHORIZATION_ENDPOINT;
-	}
+    private String OAUTH_REDIRECT;
+    private String GUACD_HOST;
+    private String GUAC_MYSQL_HOST;
+    private int GUAC_MYSQL_PORT;
+    private String GUAC_MYSQL_USER_NAME;
+    private String GUAC_MYSQL_PASSWORD;
+    private String GUAC_MYSQL_DB_NAME;
+    private ConfigurationRegistry CONFIGURATION_REGISTRY;
 
-	public String getOAuthTokenEndpoint() {
-		return OAUTH_TOKEN_ENDPOINT;
-	}
+    private static Settings instance;
 
-	public String getOAuthClientId() {
-		return OAUTH_CLIENT_ID;
-	}
+    private Settings() {
+        Configuration config;
+        try {
+            config = new PropertiesConfiguration("strudel-web.properties");
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
 
-	public String getOAuthClientSecret() {
-		return OAUTH_CLIENT_SECRET;
-	}
+        // Turn of SSL cert verification if requested
+        if (config.getBoolean("allow-invalid-ssl-cert", false)) {
+            try {
+                SSLContext sc = SSLContext.getInstance("SSL");
 
-	public String getOAuthRedirect() {
-		return OAUTH_REDIRECT;
-	}
+                sc.init(null,
+                        new TrustManager[] {
+                                new X509TrustManager() {
+                                    @Override
+                                    public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                                    }
 
-	public String getSSHAPIEndpoint() {
-		return SSH_API_ENDPOINT;
-	}
+                                    @Override
+                                    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                                    }
 
-	public TaskConfiguration getJobConfiguration() {
-		return JOB_CONFIGURATION;
-	}
-	
-	public String getGuacdHost() {
-		return GUACD_HOST;
-	}
+                                    @Override
+                                    public X509Certificate[] getAcceptedIssuers() {
+                                        return null;
+                                    }
+                                }
+                        },
+                        new SecureRandom());
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        }
 
-	public String getGuacMySQLHost() {
-		return GUAC_MYSQL_HOST;
-	}
+        setupGuacamoleParameters(config);
+        setupSystemConfigurations(config);
+    }
 
-	public int getGuacMySQLPort() {
-		return GUAC_MYSQL_PORT;
-	}
+    public static Settings getInstance() {
+        if (instance == null) {
+            instance = new Settings();
+        }
+        return instance;
+    }
 
-	public String getGuacMySQLUserName() {
-		return GUAC_MYSQL_USER_NAME;
-	}
+    private void setupSystemConfigurations(Configuration config) {
+        OAUTH_REDIRECT = config.getString("oauth-redirect");
 
-	public String getGuacMySQLPassword() {
-		return GUAC_MYSQL_PASSWORD;
-	}
+        CONFIGURATION_REGISTRY = new ConfigurationRegistry();
 
-	public String getGuacMySQLDBName() {
-		return GUAC_MYSQL_DB_NAME;
-	}
+        // Define all SSH certificate signing servers
+        try {
+            String sshCertBackendName;
+            for (int i = 0; (sshCertBackendName = config.getString("ssh-cert-backend-name" + i, (i == 0) ? "default" : null)) != null; i++) {
+                CONFIGURATION_REGISTRY.addSSHCertSigningBackend(sshCertBackendName,
+                        new SSHCertSigningBackend(
+                                sshCertBackendName,
+                                config.getString("ssh-cert-backend-oauth-authorization-endpoint" + i),
+                                config.getString("ssh-cert-backend-oauth-token-endpoint" + i),
+                                config.getString("ssh-cert-backend-ssh-api-endpoint" + i),
+                                config.getString("ssh-cert-backend-oauth-client-id" + i),
+                                config.getString("ssh-cert-backend-oauth-client-secret" + i)
+                        )
+                );
+            }
+        } catch (MalformedURLException | NullPointerException e) {
+            e.printStackTrace();
+        }
+
+        // Define all remote system configurations
+        try {
+            String systemConfigName;
+            for (int i = 0; (systemConfigName = config.getString("system-configuration-name"+i)) != null; i++) {
+                URL jsonConfigUrl = new URL(config.getString("system-configuration-json-url"+i));
+                StrudelDesktopConfigurationAdapter strudelConfig = new StrudelDesktopConfigurationAdapter(systemConfigName+"|", jsonConfigUrl);
+                for (String configId : strudelConfig.keySet()) {
+                    AbstractSystemConfiguration c = strudelConfig.get(configId);
+                    for (Object o : config.getList("system-configuration-auth-backends"+i)) {
+                        c.addAuthBackend((String) o);
+                    }
+                    CONFIGURATION_REGISTRY.addSystemConfiguration(configId, c, i == 0);
+                }
+            }
+        } catch (NullPointerException | InvalidJsonConfigurationException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        CONFIGURATION_REGISTRY.addSystemConfiguration("default", new StrudelSystemConfiguration("118.138.233.195"));
+    }
+
+    private void setupGuacamoleParameters(Configuration config) {
+        GUACD_HOST = config.getString("guacd-host", "localhost");
+        GUAC_MYSQL_HOST = config.getString("guac-mysql-host", "localhost");
+        GUAC_MYSQL_PORT = config.getInt("guac-mysql-port", 3306);
+        GUAC_MYSQL_USER_NAME = config.getString("guac-mysql-user-name", "guacamole");
+        GUAC_MYSQL_PASSWORD = config.getString("guac-mysql-password");
+        GUAC_MYSQL_DB_NAME = config.getString("guac-mysql-db-name", "guacamole");
+    }
+
+    public ConfigurationRegistry getSystemConfigurations() {
+        return CONFIGURATION_REGISTRY;
+    }
+
+    public String getOAuthRedirect() {
+        return OAUTH_REDIRECT;
+    }
+
+    public String getGuacdHost() {
+        return GUACD_HOST;
+    }
+
+    public String getGuacMySQLHost() {
+        return GUAC_MYSQL_HOST;
+    }
+
+    public int getGuacMySQLPort() {
+        return GUAC_MYSQL_PORT;
+    }
+
+    public String getGuacMySQLUserName() {
+        return GUAC_MYSQL_USER_NAME;
+    }
+
+    public String getGuacMySQLPassword() {
+        return GUAC_MYSQL_PASSWORD;
+    }
+
+    public String getGuacMySQLDBName() {
+        return GUAC_MYSQL_DB_NAME;
+    }
 }

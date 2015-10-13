@@ -48,9 +48,9 @@ public class JsonTaskConfigurationTest {
             "            \"resultPattern\": \"^(?<execHost>[^\\\\s]+)\",\n" +
             "            \"required\": [\n" +
             "                \"jobid\"\n" +
-            "            ]                                                                                                                                                                                             \n" +
-            "        }                                                                                                                                                                                                 \n" +
-            "    }                                                                                                                                                                                                     \n" +
+            "            ]\n" +
+            "        }\n" +
+            "    }\n" +
             "}";
 
     @Test
