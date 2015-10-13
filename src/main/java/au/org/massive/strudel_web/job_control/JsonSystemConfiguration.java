@@ -13,6 +13,20 @@ import java.util.*;
  */
 public class JsonSystemConfiguration extends AbstractSystemConfiguration {
 
+    public static JsonSystemConfiguration getInstance(Map<String, Object> config) throws InvalidJsonConfigurationException {
+
+        String loginHost;
+        if (config.containsKey("loginHost")) {
+            loginHost = (String) config.get("loginHost");
+        } else {
+            throw new InvalidJsonConfigurationException("JSON configuration must define 'loginHost'");
+        }
+
+        JsonSystemConfiguration jsonJobConfiguration = new JsonSystemConfiguration(loginHost);
+        jsonJobConfiguration.parseConfig(config);
+        return jsonJobConfiguration;
+    }
+
     public static JsonSystemConfiguration getInstance(URL url) throws InvalidJsonConfigurationException, IOException {
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(url.openStream()));
@@ -29,15 +43,8 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
 
     public static JsonSystemConfiguration getInstance(String jsonConfig) throws InvalidJsonConfigurationException {
         Gson gson = new Gson();
-        @SuppressWarnings("unchecked") Map<String, Object> config = gson.fromJson(jsonConfig, HashMap.class);
-        JsonSystemConfiguration jsonJobConfiguration;
-        if (config.containsKey("loginHost")) {
-            jsonJobConfiguration = new JsonSystemConfiguration((String) config.get("loginHost"));
-        } else {
-            throw new InvalidJsonConfigurationException("JSON configuration must define 'loginHost'");
-        }
-        jsonJobConfiguration.parseConfig(config);
-        return jsonJobConfiguration;
+        //noinspection unchecked
+        return getInstance(gson.fromJson(jsonConfig, HashMap.class));
     }
 
     private JsonSystemConfiguration(String loginHost) {
@@ -49,23 +56,23 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
         if (!config.containsKey("tasks")) {
             throw new InvalidJsonConfigurationException("JSON configuration must define 'tasks'");
         }
-        Map<String, Map<String,Object>> tasks = (Map<String, Map<String,Object>>) config.get("tasks");
+        Map<String, Map<String, Object>> tasks = (Map<String, Map<String, Object>>) config.get("tasks");
         for (String taskName : tasks.keySet()) {
 
-            Map<String,Object> task = tasks.get(taskName);
+            Map<String, Object> task = tasks.get(taskName);
 
             String remoteHost = getLoginHost();
             if (task.containsKey("remoteHost")) {
                 remoteHost = (String) task.get("remoteHost");
             }
-            Map<String, String> defaults = new HashMap<String,String>();
+            Map<String, String> defaults = new HashMap<>();
             if (task.containsKey("defaults")) {
                 defaults = (Map<String, String>) task.get("defaults");
             }
-            Set<String> requiredParams = new HashSet<String>();
+            Set<String> requiredParams = new HashSet<>();
             if (task.containsKey("required")) {
-                ArrayList<String> requiredParamsList = (ArrayList<String>) task.get("required");
-                requiredParams = new HashSet<String>(requiredParams.size());
+                List<String> requiredParamsList = (List<String>) task.get("required");
+                requiredParams = new HashSet<>(requiredParams.size());
                 requiredParams.addAll(requiredParamsList);
             }
 
@@ -73,14 +80,14 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
             if (task.containsKey("commandPattern")) {
                 commandPattern = (String) task.get("commandPattern");
             } else {
-                throw new InvalidJsonConfigurationException("JSON configuration for task '"+taskName+"' must define 'commandPattern'");
+                throw new InvalidJsonConfigurationException("JSON configuration for task '" + taskName + "' must define 'commandPattern'");
             }
 
             String resultsPattern;
             if (task.containsKey("resultPattern")) {
                 resultsPattern = (String) task.get("resultPattern");
             } else {
-                throw new InvalidJsonConfigurationException("JSON configuration for task '"+taskName+"' must define 'resultPattern'");
+                throw new InvalidJsonConfigurationException("JSON configuration for task '" + taskName + "' must define 'resultPattern'");
             }
 
             TaskParameters taskParameters = new TaskParameters(
@@ -88,11 +95,10 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
                     commandPattern,
                     resultsPattern,
                     defaults,
-                    requiredParams,
-                    new ArrayList<CommandPostprocessor>()
+                    requiredParams
             );
 
-           addConfiguration(taskName, taskParameters);
+            addConfiguration(taskName, taskParameters);
         }
     }
 }

@@ -10,6 +10,6 @@ package au.org.massive.strudel_web.job_control;
  */
 public interface TaskConfiguration {
 	
-	public TaskParameters findByTaskType(String jobType) throws NoSuchTaskTypeException;
+	TaskParameters findByTaskType(String jobType) throws NoSuchTaskTypeException;
 	
 }

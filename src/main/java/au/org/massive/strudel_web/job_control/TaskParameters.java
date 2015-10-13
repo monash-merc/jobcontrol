@@ -15,18 +15,16 @@ public class TaskParameters {
 	private final String resultRegexPattern;
 	private final Map<String,String> defaultParams;
 	private final Set<String> requiredParams;
-	private final List<CommandPostprocessor> postprocessors;
 
 	public TaskParameters(String remoteHost, String commandPattern,
 						  String resultRegexPattern, Map<String, String> defaultParams,
-						  Set<String> requiredParams, List<CommandPostprocessor> postprocessors) {
+						  Set<String> requiredParams) {
 		super();
 		this.remoteHost = remoteHost;
 		this.commandPattern = commandPattern;
 		this.resultRegexPattern = resultRegexPattern;
 		this.defaultParams = defaultParams;
 		this.requiredParams = requiredParams;
-		this.postprocessors = postprocessors;
 	}
 	public String getRemoteHost() {
 		return remoteHost;
@@ -42,8 +40,5 @@ public class TaskParameters {
 	}
 	public Set<String> getRequiredParams() {
 		return requiredParams;
-	}
-	public List<CommandPostprocessor> getPostprocessors() {
-		return postprocessors;
 	}
 }
