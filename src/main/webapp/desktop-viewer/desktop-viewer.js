@@ -9,8 +9,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
         });
     }])
 
-    .controller('DesktopViewerCtrl', ['$scope', '$rootScope', '$resource', '$location', '$routeParams', '$interval', '$sce', 'settings',
-        function ($scope, $rootScope, $resource, $location, $routeParams, $interval, $sce, settings) {
+    .controller('DesktopViewerCtrl', ['$scope', '$rootScope', '$http', '$resource', '$location', '$routeParams', '$interval', '$sce', 'settings',
+        function ($scope, $rootScope, $http, $resource, $location, $routeParams, $interval, $sce, settings) {
             // Resources
             var sessionInfoResource = $resource(settings.URLs.apiBase + settings.URLs.sessionInfo);
             var listVncTunnelsResource = $resource(settings.URLs.apiBase + settings.URLs.listVncTunnels, {}, {
@@ -132,20 +132,27 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                             });
                     })
                     // Refresh Guacamole
-                    .then(function(desktopName) {
+                    .then(function (desktopName) {
                         var guacamoleFrame = document.getElementById("guacamoleFrame");
                         var guacamoleContent = guacamoleFrame.contentDocument || guacamoleFrame.contentWindow.document;
-                        guacamoleContent.getElementsByClassName("logout")[0].click();
-                        var intervalPromise;
-                        intervalPromise = $interval(function() {
-                            if ( guacamoleContent.location.hash === "#/login/") {
-                                console.log(desktopName);
-                                guacamoleFrame.setAttribute("src", $scope.guacamoleUrl+"#/client/c/"+desktopName);
-                                $scope.desktopReady = true;
-                                $interval.cancel(intervalPromise);
-                                $rootScope.$broadcast("makeToolbarInvisible");
+
+                        // Get the GUAC_AUTH cookie
+                        var guacAuthCookie = (function (cookies) {
+                            for (var i = 0; i < cookies.length; i++) {
+                                if (cookies[i].startsWith("GUAC_AUTH=")) {
+                                    return JSON.parse(decodeURIComponent(cookies[i].split("=")[1]));
+                                }
                             }
-                        }, 100);
+                            return null;
+                        })(guacamoleContent.cookie.split(";"));
+
+                        // Invalidate guacamole's auth token, redirect the iframe to the new desktop
+                        $http.delete($scope.guacamoleUrl + "api/tokens/" + guacAuthCookie.authToken).then(function () {
+                                guacamoleContent.location.hash = "#/client/c/" + desktopName;
+                                $rootScope.$broadcast("makeToolbarInvisible");
+                                $scope.desktopReady = true;
+                            }
+                        );
                     });
             };
 
