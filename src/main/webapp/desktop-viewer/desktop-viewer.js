@@ -9,8 +9,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
         });
     }])
 
-    .controller('DesktopViewerCtrl', ['$scope', '$rootScope', '$http', '$resource', '$location', '$routeParams', '$interval', '$sce', 'settings',
-        function ($scope, $rootScope, $http, $resource, $location, $routeParams, $interval, $sce, settings) {
+    .controller('DesktopViewerCtrl', ['$scope', '$rootScope', '$http', '$resource', '$location', '$routeParams', '$sce', 'settings',
+        function ($scope, $rootScope, $http, $resource, $location, $routeParams, $sce, settings) {
             // Resources
             var sessionInfoResource = $resource(settings.URLs.apiBase + settings.URLs.sessionInfo);
             var listVncTunnelsResource = $resource(settings.URLs.apiBase + settings.URLs.listVncTunnels, {}, {
