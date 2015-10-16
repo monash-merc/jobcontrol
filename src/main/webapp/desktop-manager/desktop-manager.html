@@ -165,14 +165,17 @@
                                     </md-icon>
                                 </td>
                                 <td>
-                                    <md-button class="md-primary"
-                                               ng-click="showDesktop(selectedConfiguration, desktop.jobid)"
-                                               ng-disabled="!desktop.running">Show desktop
-                                    </md-button>
-                                    <md-button class="md-warn"
-                                               ng-click="stopDesktop($event, selectedConfiguration, desktop.jobid)">Stop
-                                        desktop
-                                    </md-button>
+                                    <div layout="row" layout-align="start center">
+                                        <md-button class="md-primary"
+                                                   ng-href="#/desktop-viewer/{{ selectedConfiguration.configuration.fullName }}/{{ desktop.jobid }}"
+                                                   target="_blank"
+                                                   ng-disabled="!desktop.running">Show desktop
+                                        </md-button>
+                                        <md-button class="md-warn"
+                                                   ng-click="stopDesktop($event, selectedConfiguration, desktop.jobid)">
+                                            Stop desktop
+                                        </md-button>
+                                    </div>
                                 </td>
                             </tr>
                             </tbody>

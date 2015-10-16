@@ -81,7 +81,7 @@ angular.module('strudelWeb', [
                 return response;
             };
         }])
-    .controller('AppCtrl', ['$mdToast', '$rootScope', function ($mdToast, $rootScope) {
+    .controller('AppCtrl', ['$mdToast', '$rootScope', '$scope', function ($mdToast, $rootScope, $scope) {
         $rootScope.$on('notify', function (event, message) {
             console.log(message);
             $mdToast.show(
@@ -90,5 +90,17 @@ angular.module('strudelWeb', [
                     .position("bottom right")
                     .hideDelay(10000)
             );
+        });
+
+        $scope.toolbarHidden = false;
+        $rootScope.$on('makeToolbarVisible', function (event) {
+            $scope.toolbarHidden = false;
+        });
+
+        $rootScope.$on('makeToolbarInvisible', function (event) {
+            $scope.toolbarHidden = true;
+        });
+        $rootScope.$on('$routeChangeSuccess', function (event) {
+            $scope.toolbarHidden = false;
         });
     }]);
