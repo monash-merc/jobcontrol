@@ -143,6 +143,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                                 guacamoleFrame.setAttribute("src", $scope.guacamoleUrl+"#/client/c/"+desktopName);
                                 $scope.desktopReady = true;
                                 $interval.cancel(intervalPromise);
+                                $rootScope.$broadcast("makeToolbarInvisible");
                             }
                         }, 100);
                     });

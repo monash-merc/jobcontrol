@@ -36,7 +36,7 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>package</phase>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -47,7 +47,7 @@
 					<arguments>
 						<argument>install</argument>
 					</arguments>
-					<workingDirectory>${basedir}/target/strudel-web/</workingDirectory>
+					<workingDirectory>${basedir}/src/main/webapp/</workingDirectory>
 				</configuration>
 			</plugin>
         </plugins>
