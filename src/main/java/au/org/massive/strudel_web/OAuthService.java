@@ -33,9 +33,10 @@ public class OAuthService {
     /**
      * Generates an authorization code request
      *
-     * @param afterAuthRedirect
+     * @param afterAuthRedirect {@link URI} to be redirected to after authorisation
+     * @param authBackend an object defining the access parameters to the SSH-AuthZ server
      * @return an authorization code request
-     * @throws OAuthSystemException
+     * @throws OAuthSystemException thrown if errors with with the oauth system occur
      */
     public static OAuthClientRequest getAuthCodeRequest(SSHCertSigningBackend authBackend, URI afterAuthRedirect) throws OAuthSystemException {
         return OAuthClientRequest.authorizationLocation(authBackend.getOAuthAuthorisationEndpoint().toString())
@@ -49,9 +50,10 @@ public class OAuthService {
     /**
      * Performs the auth code redirect
      *
-     * @param response
-     * @param afterAuthRedirect
-     * @throws OAuthSystemException
+     * @param response {@link HttpServletResponse} object from a servlet
+     * @param session the current http session
+     * @param afterAuthRedirect {@link URI} to be redirected to after authorisation
+     * @throws OAuthSystemException thrown if errors with with the oauth system occur
      */
     public static void doAuthCodeRedirect(HttpServletResponse response, Session session, URI afterAuthRedirect) throws OAuthSystemException {
         OAuthClientRequest oauthReq = OAuthService.getAuthCodeRequest(session.getSSHCertSigningBackend(), afterAuthRedirect);
@@ -65,20 +67,21 @@ public class OAuthService {
     /**
      * Extracts the auth code from the request
      *
-     * @param req
+     * @param req {@link HttpServletRequest} object from a servlet
      * @return the auth code
-     * @throws OAuthProblemException
+     * @throws OAuthProblemException thrown if there are errors with the OAuth request
      */
     public static String getAuthCodeFromRequest(HttpServletRequest req) throws OAuthProblemException {
         return OAuthAuthzResponse.oauthCodeAuthzResponse(req).getCode();
     }
 
     /**
-     * Extracts the location to redirect after successful auth
+     * Extracts the location to redirect after successful auth using the state parameter of the
+     * OAuth request
      *
-     * @param req
-     * @return
-     * @throws OAuthProblemException
+     * @param req {@link HttpServletRequest} object from a servlet
+     * @return the redirect URI
+     * @throws OAuthProblemException thrown if there are errors with the OAuth request
      */
     public static URI getAfterAuthRedirect(HttpServletRequest req) throws OAuthProblemException {
         return URI.create(OAuthAuthzResponse.oauthCodeAuthzResponse(req).getState());
@@ -87,10 +90,10 @@ public class OAuthService {
     /**
      * Requests an access token
      *
-     * @param req
-     * @param session
-     * @throws OAuthProblemException
-     * @throws OAuthSystemException
+     * @param req {@link HttpServletRequest} object from a servlet
+     * @param session the current http session
+     * @throws OAuthProblemException thrown if there are errors with the OAuth request
+     * @throws OAuthSystemException thrown if errors with with the oauth system occur
      */
     public static void doTokenRequest(HttpServletRequest req, Session session) throws OAuthProblemException, OAuthSystemException {
         doTokenRequest(getAuthCodeFromRequest(req), session);
@@ -99,10 +102,10 @@ public class OAuthService {
     /**
      * Requests an access token
      *
-     * @param code
-     * @param session
-     * @throws OAuthSystemException
-     * @throws OAuthProblemException
+     * @param code the authorisation code
+     * @param session the current http session
+     * @throws OAuthSystemException thrown if errors with with the oauth system occur
+     * @throws OAuthProblemException thrown if there are errors with the OAuth request
      */
     public static void doTokenRequest(String code, Session session) throws OAuthSystemException, OAuthProblemException {
         SSHCertSigningBackend authBackend = session.getSSHCertSigningBackend();
