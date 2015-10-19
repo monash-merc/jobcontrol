@@ -6,11 +6,18 @@
 Welcome to Strudel Web's documentation!
 =======================================
 
+Strudel Web is a web-based version of the `Strudel desktop application`_.
+
+.. _Strudel desktop application: https://www.massive.org.au/userguide/cluster-instructions/strudel
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
+   user-guide
+   administration-guide
+   development-guide
 
 
 Indices and tables
