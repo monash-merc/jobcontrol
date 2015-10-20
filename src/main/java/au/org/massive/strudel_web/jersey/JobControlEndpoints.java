@@ -293,6 +293,7 @@ public class JobControlEndpoints extends Endpoint {
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("id", guacSession.getId());
         responseData.put("desktopName", desktopName);
+        responseData.put("localPort", guacSession.getPort());
         return gson.toJson(responseData);
     }
 
@@ -408,6 +409,7 @@ public class JobControlEndpoints extends Endpoint {
             tunnel.put("id", s.getId());
             tunnel.put("desktopName", s.getName());
             tunnel.put("password", s.getPassword());
+            tunnel.put("localPort", s.getPort());
         }
 
         Gson gson = new Gson();
