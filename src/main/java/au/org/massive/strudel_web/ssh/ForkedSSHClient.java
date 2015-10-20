@@ -92,10 +92,10 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Starts an SSH tunnel
      *
-     * @param remotePort
-     * @param maxUptimeInSeconds
-     * @return
-     * @throws IOException
+     * @param remotePort the port to forward
+     * @param maxUptimeInSeconds the maximum length of time for the tunnel to remain open. Zero represents infinity.
+     * @return a {@link Tunnel} object
+     * @throws IOException thrown on errors reading data streams
      */
     public Tunnel startTunnel(final int remotePort, int maxUptimeInSeconds) throws IOException {
         final int localPort = findFreePort();
@@ -149,7 +149,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Executes a remote command
      *
-     * @param remoteCommands
+     * @param remoteCommands commands to execute
      * @param watchdog       can be used to kill runaway processes
      * @return the command results
      */
@@ -161,12 +161,12 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Exeucte a remote command
      *
-     * @param remoteCommands
+     * @param remoteCommands commands to execute
      * @param extraFlags     a map of flags and arguments for the SSH process; map values are allowed to be empty or null
-     * @param watchdog
+     * @param watchdog can be used to kill runaway processes
      * @return the command results
-     * @throws IOException
-     * @throws SSHExecException
+     * @throws IOException thrown on errors reading data streams
+     * @throws SSHExecException thrown on errors caused during SSH command execution
      */
     public String exec(String remoteCommands, Map<String, String> extraFlags, ExecuteWatchdog watchdog) throws IOException, SSHExecException {
         CertFiles certFiles = new CertFiles(authInfo);

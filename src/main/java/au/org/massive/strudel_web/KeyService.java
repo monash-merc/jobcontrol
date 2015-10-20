@@ -63,10 +63,12 @@ public class KeyService {
     /**
      * Converts a key that's subclassed from {@link RSAKey} to a string representation
      *
-     * @param key
+     * @param key a key extending RSAKey
+     * @param <E> the type of key to convert to a string
      * @return String representation of the key
+     * @throws UnsupportedKeyException thrown if the key is neither an {@link RSAPrivateKey} or {@link RSAPublicKey}
      */
-    public static <E extends RSAKey> String keyToString(E key) {
+    public static <E extends RSAKey> String keyToString(E key) throws UnsupportedKeyException {
         String header = "", footer = "", keyString = "";
         if (key instanceof RSAPrivateKey) {
             // Return the private key in PEM format
@@ -105,6 +107,8 @@ public class KeyService {
                 throw new RuntimeException(e);
             }
             keyString = new String(Base64.encodeBase64(keyBytes));
+        } else {
+            throw new UnsupportedKeyException();
         }
 
         StringBuilder sb = new StringBuilder();
@@ -118,12 +122,12 @@ public class KeyService {
     /**
      * Registers a public key with the ssh authz server and returns a certificate
      *
-     * @param oauthAccessToken
+     * @param oauthAccessToken the OAuth access token
      * @param authBackend      the ssh cert signing service
      * @return certificate
-     * @throws OAuthSystemException
-     * @throws OAuthProblemException
-     * @throws UnauthorizedException
+     * @throws OAuthSystemException thrown if errors with with the oauth system occur
+     * @throws OAuthProblemException thrown if problems with the oauth request
+     * @throws UnauthorizedException thrown if the server denies access to a resource
      */
     public static CertAuthInfo registerKey(String oauthAccessToken, SSHCertSigningBackend authBackend) throws OAuthSystemException, OAuthProblemException, UnauthorizedException {
         Gson gson = new Gson();
@@ -138,7 +142,11 @@ public class KeyService {
         apiRequest.setHeader(OAuth.HeaderType.CONTENT_TYPE, "application/json");
 
         Map<String, String> data = new HashMap<>();
-        data.put("public_key", keyToString((RSAPublicKey) kp.getPublic()));
+        try {
+            data.put("public_key", keyToString((RSAPublicKey) kp.getPublic()));
+        } catch (UnsupportedKeyException e) {
+            throw new RuntimeException(e);
+        }
 
         apiRequest.setBody(gson.toJson(data));
 
@@ -153,7 +161,11 @@ public class KeyService {
         @SuppressWarnings("unchecked")
         Map<String, String> certificateResponse = (Map<String, String>) gson.fromJson(apiResponse.getBody(), HashMap.class);
 
-        return new CertAuthInfo(certificateResponse.get("user"), certificateResponse.get("certificate"), keyToString((RSAPrivateKey) kp.getPrivate()));
+        try {
+            return new CertAuthInfo(certificateResponse.get("user"), certificateResponse.get("certificate"), keyToString((RSAPrivateKey) kp.getPrivate()));
+        } catch (UnsupportedKeyException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
