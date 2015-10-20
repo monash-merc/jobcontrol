@@ -152,7 +152,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                         }
 
                         // This is the cookie that Guacamole will intercept for connection credentials
-                        $cookies.put("vnc-credentials", JSON.stringify(
+                        // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
+                        $cookies.put("vnc-credentials-"+vncInfo.port, JSON.stringify(
                             {
                                 'name': vncInfo.desktopName,
                                 'hostname': 'localhost',
