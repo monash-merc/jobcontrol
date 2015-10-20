@@ -18,7 +18,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import au.org.massive.strudel_web.job_control.*;
-import au.org.massive.strudel_web.vnc.GuacamoleDB;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 
@@ -294,53 +293,6 @@ public class JobControlEndpoints extends Endpoint {
         responseData.put("id", guacSession.getId());
         responseData.put("desktopName", desktopName);
         responseData.put("localPort", guacSession.getPort());
-        return gson.toJson(responseData);
-    }
-
-    /**
-     * Updates the vnc password in the database
-     *
-     * @param desktopName name of the desktop
-     * @param newPassword the new password
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
-     * @return update status
-     * @throws IOException thrown on network IO errors
-     */
-    @GET
-    @Path("/updatevncpwd")
-    @Produces("application/json")
-    public String updateVncPassword(@QueryParam("desktopname") String desktopName,
-                                    @QueryParam("vncpassword") String newPassword,
-                                    @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
-        Session session = getSessionWithCertificateOrSendError(request, response);
-        if (session == null) {
-            return null;
-        }
-
-        boolean done = false;
-        for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
-            if (s.getName().equals(desktopName)) {
-                s.setPassword(newPassword);
-                try {
-                    GuacamoleDB.updateSession(s);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    break;
-                }
-                done = true;
-                break;
-            }
-        }
-
-        Gson gson = new Gson();
-        Map<String, Object> responseData = new HashMap<>();
-        if (done) {
-            responseData.put("message", "password updated");
-        } else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "could not update vnc password");
-            return null;
-        }
         return gson.toJson(responseData);
     }
 

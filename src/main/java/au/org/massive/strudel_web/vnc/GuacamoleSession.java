@@ -6,6 +6,7 @@ package au.org.massive.strudel_web.vnc;
  * @author jrigby
  */
 public class GuacamoleSession {
+    private static int instanceCount = 0;
     private int id;
     private String name;
     private String hostName;
@@ -21,7 +22,8 @@ public class GuacamoleSession {
     public GuacamoleSession(int id, String name, String hostName, int port,
                             String protocol, String password, GuacamoleUser user) {
         super();
-        this.id = id;
+        instanceCount ++;
+        this.id = instanceCount;
         this.name = name;
         this.hostName = hostName;
         this.port = port;
