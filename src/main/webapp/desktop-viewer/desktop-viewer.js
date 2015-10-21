@@ -42,13 +42,9 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
 
             $scope.guacamoleUrl = $sce.trustAsResourceUrl(settings.URLs.guacamole);
 
-            var generateTunnelName = function (userName, configurationName, desktopId) {
-                return (userName + '-' + configurationName + '-' + desktopId).replace("|", "-").replace(" ", "_");
-            };
-
             $scope.desktopReady = false;
             var bootstrap = function (userName, configurationName, desktopId) {
-                var desktopName = generateTunnelName(userName, configurationName, desktopId);
+                var desktopName = "desktop"+Date.now();
 
                 // 1. Get the execution host of the desktop
                 execHostResource.get({
@@ -155,7 +151,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                         // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
                         var cookieExpiry = new Date();
                         cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
-                        $cookies.put("vnc-credentials-"+vncInfo.port, JSON.stringify(
+                        $cookies.put("vnc-credentials-"+Date.now().toString(), JSON.stringify(
                             {
                                 'name': vncInfo.desktopName,
                                 'hostname': 'localhost',
