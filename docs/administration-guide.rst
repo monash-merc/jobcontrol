@@ -10,12 +10,11 @@ Dependencies
 * `SSH-AuthZ server`_
 * Guacamole_
 * `MASSIVE Guacamole authorisation plugin`_
-* MySQL (required by the MASSIVE Guacamole authorisation plugin)
 
 Guacamole should be installed on the same server as Strudel Web, and protected by the same mechanism as SSH-AuthZ (e.g. AAF_)
 
 .. _Guacamole: http://guac-dev.org/
-.. _MASSIVE Guacamole authorisation plugin: https://github.com/monash-merc/massive-guacamole-remote
+.. _MASSIVE Guacamole authorisation plugin: https://github.com/jasonrig/massive-guacamole-remote.git
 .. _AAF: http://aaf.edu.au/
 
 Building

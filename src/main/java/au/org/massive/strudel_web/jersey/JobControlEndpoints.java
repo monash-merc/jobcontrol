@@ -1,39 +1,25 @@
 
 package au.org.massive.strudel_web.jersey;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
+import au.org.massive.strudel_web.*;
 import au.org.massive.strudel_web.job_control.*;
-import au.org.massive.strudel_web.vnc.GuacamoleDB;
-import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-
-import au.org.massive.strudel_web.KeyService;
-import au.org.massive.strudel_web.NoSuchSessionException;
-import au.org.massive.strudel_web.Session;
-import au.org.massive.strudel_web.SessionManager;
-import au.org.massive.strudel_web.Settings;
-import au.org.massive.strudel_web.UnauthorizedException;
 import au.org.massive.strudel_web.job_control.TaskFactory.Task;
 import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
-
 import com.google.gson.Gson;
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Endpoints that act on an HPC system
@@ -293,53 +279,7 @@ public class JobControlEndpoints extends Endpoint {
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("id", guacSession.getId());
         responseData.put("desktopName", desktopName);
-        return gson.toJson(responseData);
-    }
-
-    /**
-     * Updates the vnc password in the database
-     *
-     * @param desktopName name of the desktop
-     * @param newPassword the new password
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
-     * @return update status
-     * @throws IOException thrown on network IO errors
-     */
-    @GET
-    @Path("/updatevncpwd")
-    @Produces("application/json")
-    public String updateVncPassword(@QueryParam("desktopname") String desktopName,
-                                    @QueryParam("vncpassword") String newPassword,
-                                    @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
-        Session session = getSessionWithCertificateOrSendError(request, response);
-        if (session == null) {
-            return null;
-        }
-
-        boolean done = false;
-        for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
-            if (s.getName().equals(desktopName)) {
-                s.setPassword(newPassword);
-                try {
-                    GuacamoleDB.updateSession(s);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    break;
-                }
-                done = true;
-                break;
-            }
-        }
-
-        Gson gson = new Gson();
-        Map<String, Object> responseData = new HashMap<>();
-        if (done) {
-            responseData.put("message", "password updated");
-        } else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "could not update vnc password");
-            return null;
-        }
+        responseData.put("localPort", guacSession.getPort());
         return gson.toJson(responseData);
     }
 
@@ -408,6 +348,7 @@ public class JobControlEndpoints extends Endpoint {
             tunnel.put("id", s.getId());
             tunnel.put("desktopName", s.getName());
             tunnel.put("password", s.getPassword());
+            tunnel.put("localPort", s.getPort());
         }
 
         Gson gson = new Gson();

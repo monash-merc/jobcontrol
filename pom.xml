@@ -34,6 +34,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.4.0</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -143,14 +144,6 @@
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
-		</dependency>
-		
-		
-		<!-- MySQL -->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.35</version>
 		</dependency>
 		
         <dependency>

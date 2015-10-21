@@ -42,11 +42,6 @@ public class GuacamoleSessionManager implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent arg0) {
-        try {
-            GuacamoleDB.cleanDb();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         final long FIVE_SECONDS = 5000;
         tunnelCleaner.schedule(new TimerTask() {
 
@@ -76,12 +71,8 @@ public class GuacamoleSessionManager implements ServletContextListener {
             guacSession.setProtocol("vnc");
             guacSession.setPort(startTunnel(remoteHost, remotePort, session));
             guacSession.setUser(new GuacamoleUser(0, session.getCertificate().getUserName(), session.getUserEmail()));
-            GuacamoleDB.createSession(guacSession);
-            if (guacSession.getId() > -1) { // A session of -1 indicates failure (i.e. attempt at creating a duplicate tunnel
-                // so don't add it to the set.
-                session.getGuacamoleSessionsSet().add(guacSession);
-            }
-        } catch (SQLException | IOException e) {
+            session.getGuacamoleSessionsSet().add(guacSession);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return guacSession;
@@ -89,12 +80,7 @@ public class GuacamoleSessionManager implements ServletContextListener {
 
     public static void endSession(GuacamoleSession guacSession, Session session) {
         stopTunnel(guacSession.getPort());
-        try {
-            GuacamoleDB.deleteSession(guacSession);
-            session.getGuacamoleSessionsSet().remove(guacSession);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        session.getGuacamoleSessionsSet().remove(guacSession);
     }
 
     private static int startTunnel(String remoteHost, int remotePort, Session session) throws IOException {

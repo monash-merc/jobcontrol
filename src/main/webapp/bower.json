@@ -12,6 +12,7 @@
     "angular-mocks": "~1.4.0",
     "html5-boilerplate": "~5.2.0",
     "angular-material": "~0.11.2",
-    "angular-resource": "~1.4.7"
+    "angular-resource": "~1.4.7",
+    "angular-cookies": "~1.4.7"
   }
 }

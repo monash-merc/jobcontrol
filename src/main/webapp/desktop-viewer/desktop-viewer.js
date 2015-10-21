@@ -1,6 +1,10 @@
 'use strict';
 
-angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
+angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies'])
+
+    .config(['$cookiesProvider', function($cookiesProvider) {
+        $cookiesProvider.defaults.path = '/';
+    }])
 
     .config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/desktop-viewer/:configuration/:desktopId/', {
@@ -9,8 +13,9 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
         });
     }])
 
-    .controller('DesktopViewerCtrl', ['$scope', '$rootScope', '$http', '$resource', '$location', '$routeParams', '$sce', 'settings',
-        function ($scope, $rootScope, $http, $resource, $location, $routeParams, $sce, settings) {
+    .controller('DesktopViewerCtrl',
+    ['$scope', '$rootScope', '$cookies', '$http', '$resource', '$location', '$routeParams', '$sce', 'settings',
+        function ($scope, $rootScope, $cookies, $http, $resource, $location, $routeParams, $sce, settings) {
             // Resources
             var sessionInfoResource = $resource(settings.URLs.apiBase + settings.URLs.sessionInfo);
             var listVncTunnelsResource = $resource(settings.URLs.apiBase + settings.URLs.listVncTunnels, {}, {
@@ -34,7 +39,6 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                     isArray: true
                 }
             });
-            var updateVncPasswordResource = $resource(settings.URLs.apiBase + settings.URLs.updateVncPassword);
 
             $scope.guacamoleUrl = $sce.trustAsResourceUrl(settings.URLs.guacamole);
 
@@ -44,6 +48,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
 
             $scope.desktopReady = false;
             var bootstrap = function (userName, configurationName, desktopId) {
+                var desktopName = generateTunnelName(userName, configurationName, desktopId);
+
                 // 1. Get the execution host of the desktop
                 execHostResource.get({
                     'jobidNumber': desktopId,
@@ -64,6 +70,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                         }).$promise
                             .then(function (data) {
                                 return {
+                                    'desktopName': desktopName,
                                     'host': host,
                                     'display': data[0].vncDisplay
                                 };
@@ -93,34 +100,26 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                         return listVncTunnelsResource.get({}).$promise.then(function (tunnels) {
                                 var hasTunnel = false;
                                 for (var i = 0; i < tunnels.length; i++) {
-                                    if (tunnels[i].desktopName === generateTunnelName(userName, configurationName, desktopId)) {
+                                    if (tunnels[i].desktopName === desktopName) {
+                                        vncInfo.port = tunnels[i].localPort;
                                         hasTunnel = true;
                                         break;
                                     }
                                 }
                                 if (hasTunnel) {
-                                    // 4a. Update password
-                                    return updateVncPasswordResource.get({
-                                        'desktopname': generateTunnelName(userName, configurationName, desktopId),
-                                        'vncpassword': vncInfo.password
-                                    }).$promise
-                                        .then(function (data) {
-                                            console.log(data);
-                                            return generateTunnelName(userName, configurationName, desktopId);
-                                        },
-                                        function () {
-                                            $rootScope.$broadcast("notify", "Could not update the VNC one-time password!");
-                                        });
+                                    // 4a. Tunnel exists, so just return the vncInfo object
+                                    return vncInfo;
                                 } else {
                                     // 4b. Create tunnel
                                     return startVncTunnelResource.get({
-                                        'desktopname': generateTunnelName(userName, configurationName, desktopId),
+                                        'desktopname': vncInfo.desktopName,
                                         'vncpassword': vncInfo.password,
                                         'remotehost': vncInfo.host,
                                         'display': vncInfo.display.replace(":", "")
                                     }).$promise
-                                        .then(function () {
-                                            return generateTunnelName(userName, configurationName, desktopId);
+                                        .then(function (newTunnel) {
+                                            vncInfo.port = newTunnel.localPort;
+                                            return vncInfo;
                                         },
                                         function () {
                                             $rootScope.$broadcast("notify", "Could not start the VNC tunnel!");
@@ -132,7 +131,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                             });
                     })
                     // Refresh Guacamole
-                    .then(function (desktopName) {
+                    .then(function (vncInfo) {
                         var guacamoleFrame = document.getElementById("guacamoleFrame");
                         var guacamoleContent = guacamoleFrame.contentDocument || guacamoleFrame.contentWindow.document;
 
@@ -146,13 +145,36 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource'])
                             return null;
                         })(guacamoleContent.cookie.split(";"));
 
-                        // Invalidate guacamole's auth token, redirect the iframe to the new desktop
-                        $http.delete($scope.guacamoleUrl + "api/tokens/" + guacAuthCookie.authToken).then(function () {
-                                guacamoleContent.location.hash = "#/client/c/" + desktopName;
-                                $rootScope.$broadcast("makeToolbarInvisible");
-                                $scope.desktopReady = true;
+                        function redirectGuacIframe() {
+                            guacamoleContent.location.hash = "#/client/c/" + vncInfo.desktopName;
+                            $rootScope.$broadcast("makeToolbarInvisible");
+                            $scope.desktopReady = true;
+                        }
+
+                        // This is the cookie that Guacamole will intercept for connection credentials
+                        // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
+                        var cookieExpiry = new Date();
+                        cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
+                        $cookies.put("vnc-credentials-"+vncInfo.port, JSON.stringify(
+                            {
+                                'name': vncInfo.desktopName,
+                                'hostname': 'localhost',
+                                'port': vncInfo.port.toString(),
+                                'password': vncInfo.password,
+                                'protocol': 'vnc'
                             }
-                        );
+                        ),
+                            {
+                                'expires': cookieExpiry
+                            });
+
+                        if (guacAuthCookie) {
+                            // Invalidate guacamole's auth token, redirect the iframe to the new desktop
+                            $http.delete($scope.guacamoleUrl + "api/tokens/" + guacAuthCookie.authToken)
+                                .then(redirectGuacIframe);
+                        } else {
+                            redirectGuacIframe();
+                        }
                     });
             };
 
