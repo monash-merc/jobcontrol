@@ -88,13 +88,17 @@ public class GuacamoleSession {
         this.user = user;
     }
 
+    public String toString() {
+        return getProtocol()+"://"+getHostName()+":"+getPort()+"/"+getName();
+    }
+
     @Override
     public boolean equals(Object o) {
-        return new Integer(id).equals(o);
+        return toString().equals(o);
     }
 
     @Override
     public int hashCode() {
-        return new Integer(id).hashCode();
+        return toString().hashCode();
     }
 }
