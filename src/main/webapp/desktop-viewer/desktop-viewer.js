@@ -153,6 +153,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
 
                         // This is the cookie that Guacamole will intercept for connection credentials
                         // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
+                        var cookieExpiry = new Date();
+                        cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
                         $cookies.put("vnc-credentials-"+vncInfo.port, JSON.stringify(
                             {
                                 'name': vncInfo.desktopName,
@@ -161,7 +163,10 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                 'password': vncInfo.password,
                                 'protocol': 'vnc'
                             }
-                        ))
+                        ),
+                            {
+                                'expires': cookieExpiry
+                            });
 
                         if (guacAuthCookie) {
                             // Invalidate guacamole's auth token, redirect the iframe to the new desktop
