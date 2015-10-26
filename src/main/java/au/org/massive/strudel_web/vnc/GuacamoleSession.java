@@ -16,10 +16,10 @@ public class GuacamoleSession {
     private GuacamoleUser user;
 
     public GuacamoleSession() {
-
+        this(null, null, 0, null, null, null);
     }
 
-    public GuacamoleSession(int id, String name, String hostName, int port,
+    public GuacamoleSession(String name, String hostName, int port,
                             String protocol, String password, GuacamoleUser user) {
         super();
         instanceCount ++;
