@@ -2,7 +2,7 @@
 
 angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies'])
 
-    .config(['$cookiesProvider', function($cookiesProvider) {
+    .config(['$cookiesProvider', function ($cookiesProvider) {
         $cookiesProvider.defaults.path = '/';
     }])
 
@@ -18,11 +18,6 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
         function ($scope, $rootScope, $cookies, $http, $resource, $location, $routeParams, $sce, settings) {
             // Resources
             var sessionInfoResource = $resource(settings.URLs.apiBase + settings.URLs.sessionInfo);
-            var listVncTunnelsResource = $resource(settings.URLs.apiBase + settings.URLs.listVncTunnels, {}, {
-                'get': {
-                    isArray: true
-                }
-            });
             var execHostResource = $resource(settings.URLs.apiBase + settings.URLs.execHost + "/in/:configuration/", {}, {
                 'get': {
                     isArray: true
@@ -44,7 +39,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
 
             $scope.desktopReady = false;
             var bootstrap = function (userName, configurationName, desktopId) {
-                var desktopName = "desktop"+Date.now();
+                var desktopName = "desktop" + Date.now();
 
                 // 1. Get the execution host of the desktop
                 execHostResource.get({
@@ -93,38 +88,19 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                     })
                     // 4. Check existing tunnels
                     .then(function (vncInfo) {
-                        return listVncTunnelsResource.get({}).$promise.then(function (tunnels) {
-                                var hasTunnel = false;
-                                for (var i = 0; i < tunnels.length; i++) {
-                                    if (tunnels[i].desktopName === desktopName) {
-                                        vncInfo.port = tunnels[i].localPort;
-                                        hasTunnel = true;
-                                        break;
-                                    }
-                                }
-                                if (hasTunnel) {
-                                    // 4a. Tunnel exists, so just return the vncInfo object
-                                    return vncInfo;
-                                } else {
-                                    // 4b. Create tunnel
-                                    return startVncTunnelResource.get({
-                                        'desktopname': vncInfo.desktopName,
-                                        'vncpassword': vncInfo.password,
-                                        'remotehost': vncInfo.host,
-                                        'display': vncInfo.display.replace(":", ""),
-                                        'configuration': configurationName
-                                    }).$promise
-                                        .then(function (newTunnel) {
-                                            vncInfo.port = newTunnel.localPort;
-                                            return vncInfo;
-                                        },
-                                        function () {
-                                            $rootScope.$broadcast("notify", "Could not start the VNC tunnel!");
-                                        });
-                                }
+                        return startVncTunnelResource.get({
+                            'desktopname': vncInfo.desktopName,
+                            'vncpassword': vncInfo.password,
+                            'remotehost': vncInfo.host,
+                            'display': vncInfo.display.replace(":", ""),
+                            'configuration': configurationName
+                        }).$promise
+                            .then(function (newTunnel) {
+                                vncInfo.port = newTunnel.localPort;
+                                return vncInfo;
                             },
-                            function (error) {
-                                $rootScope.$broadcast("notify", "Could not get the list of running tunnels!");
+                            function () {
+                                $rootScope.$broadcast("notify", "Could not start the VNC tunnel!");
                             });
                     })
                     // Refresh Guacamole
@@ -152,15 +128,15 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                         // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
                         var cookieExpiry = new Date();
                         cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
-                        $cookies.put("vnc-credentials-"+Date.now().toString(), JSON.stringify(
-                            {
-                                'name': vncInfo.desktopName,
-                                'hostname': 'localhost',
-                                'port': vncInfo.port.toString(),
-                                'password': vncInfo.password,
-                                'protocol': 'vnc'
-                            }
-                        ),
+                        $cookies.put("vnc-credentials-" + Date.now().toString(), JSON.stringify(
+                                {
+                                    'name': vncInfo.desktopName,
+                                    'hostname': 'localhost',
+                                    'port': vncInfo.port.toString(),
+                                    'password': vncInfo.password,
+                                    'protocol': 'vnc'
+                                }
+                            ),
                             {
                                 'expires': cookieExpiry
                             });

@@ -79,7 +79,6 @@ public class Settings {
             }
         }
 
-        setupGuacamoleParameters(config);
         setupSystemConfigurations(config);
     }
 
@@ -135,44 +134,11 @@ public class Settings {
         CONFIGURATION_REGISTRY.addSystemConfiguration("default", new StrudelSystemConfiguration("118.138.233.195"));
     }
 
-    private void setupGuacamoleParameters(Configuration config) {
-        GUACD_HOST = config.getString("guacd-host", "localhost");
-        GUAC_MYSQL_HOST = config.getString("guac-mysql-host", "localhost");
-        GUAC_MYSQL_PORT = config.getInt("guac-mysql-port", 3306);
-        GUAC_MYSQL_USER_NAME = config.getString("guac-mysql-user-name", "guacamole");
-        GUAC_MYSQL_PASSWORD = config.getString("guac-mysql-password");
-        GUAC_MYSQL_DB_NAME = config.getString("guac-mysql-db-name", "guacamole");
-    }
-
     public ConfigurationRegistry getSystemConfigurations() {
         return CONFIGURATION_REGISTRY;
     }
 
     public String getOAuthRedirect() {
         return OAUTH_REDIRECT;
-    }
-
-    public String getGuacdHost() {
-        return GUACD_HOST;
-    }
-
-    public String getGuacMySQLHost() {
-        return GUAC_MYSQL_HOST;
-    }
-
-    public int getGuacMySQLPort() {
-        return GUAC_MYSQL_PORT;
-    }
-
-    public String getGuacMySQLUserName() {
-        return GUAC_MYSQL_USER_NAME;
-    }
-
-    public String getGuacMySQLPassword() {
-        return GUAC_MYSQL_PASSWORD;
-    }
-
-    public String getGuacMySQLDBName() {
-        return GUAC_MYSQL_DB_NAME;
     }
 }
