@@ -38,6 +38,11 @@ public class ForkedSSHClient extends AbstractSSHClient {
         this.authInfo = authInfo;
     }
 
+    public ForkedSSHClient(CertAuthInfo authInfo, String viaGateway, String remoteHost) {
+        super(authInfo, viaGateway, remoteHost);
+        this.authInfo = authInfo;
+    }
+
     private class CertFiles implements Closeable {
         private final File tempDirectory;
         private final File privKeyFile;
@@ -110,7 +115,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
             @Override
             public String call() throws Exception {
                 Map<String, String> tunnelFlags = new HashMap<>();
-                tunnelFlags.put("-L" + localPort + ":localhost:" + remotePort, "");
+                tunnelFlags.put("-L" + localPort + ":"+getRemoteHost()+":" + remotePort, "");
                 return exec("sleep infinity", tunnelFlags, watchdog);
             }
 
@@ -180,7 +185,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
         cmdLine.addArgument("-oKbdInteractiveAuthentication=no");
         cmdLine.addArgument("-l");
         cmdLine.addArgument(getAuthInfo().getUserName());
-        cmdLine.addArgument(getRemoteHost());
+        cmdLine.addArgument(getViaGateway());
 
         // Add extra flags
         if (extraFlags != null && extraFlags.size() > 0) {

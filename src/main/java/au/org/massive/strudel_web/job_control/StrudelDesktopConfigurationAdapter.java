@@ -111,6 +111,10 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
 
         Map<String, Object> parsedConfig = new HashMap<>();
         parsedConfig.put("loginHost", loginHost);
+        //noinspection unchecked
+        parsedConfig.put("isTunnelTerminatedOnLoginHost", isTunnelTerminatedOnLoginHost(
+                (String) ((Map<String, Object>) config.get("tunnel")).get("cmd")
+        ));
         Map<String, Object> tasks = new HashMap<>();
         parsedConfig.put("tasks", tasks);
 
@@ -134,6 +138,15 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
         tasks.put("vncdisplay", extractFunctionFromStrudelConfig("vncDisplay", config));
 
         return JsonSystemConfiguration.getInstance(parsedConfig);
+    }
+
+    /**
+     * Attempts to determine whether the vnc tunnels need to terminate at the login or execution host
+     * @param sshCommand the ssh command from the json file
+     * @return true if the tunnel is terminated on the login host
+     */
+    private boolean isTunnelTerminatedOnLoginHost(String sshCommand) {
+        return sshCommand.contains("{localPortNumber}:{execHost}:{remotePortNumber}");
     }
 
     /**

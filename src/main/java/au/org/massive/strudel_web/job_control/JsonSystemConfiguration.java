@@ -22,7 +22,14 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
             throw new InvalidJsonConfigurationException("JSON configuration must define 'loginHost'");
         }
 
-        JsonSystemConfiguration jsonJobConfiguration = new JsonSystemConfiguration(loginHost);
+        Boolean isTunnelTerminatedOnLoginHost = (Boolean) config.get("isTunnelTerminatedOnLoginHost");
+
+        JsonSystemConfiguration jsonJobConfiguration;
+        if (isTunnelTerminatedOnLoginHost == null) {
+            jsonJobConfiguration = new JsonSystemConfiguration(loginHost);
+        } else {
+            jsonJobConfiguration = new JsonSystemConfiguration(loginHost, isTunnelTerminatedOnLoginHost);
+        }
         jsonJobConfiguration.parseConfig(config);
         return jsonJobConfiguration;
     }
@@ -49,6 +56,10 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
 
     private JsonSystemConfiguration(String loginHost) {
         super(loginHost);
+    }
+
+    private JsonSystemConfiguration(String loginHost, boolean terminateTunnelOnLoginHost) {
+        super(loginHost, terminateTunnelOnLoginHost);
     }
 
     @SuppressWarnings("unchecked")

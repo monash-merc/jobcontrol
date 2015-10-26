@@ -18,10 +18,16 @@ import au.org.massive.strudel_web.AsyncTasks;
 public abstract class AbstractSSHClient implements SSHClient {
 
     private final CertAuthInfo authInfo;
+    private final String viaGateway;
     private final String remoteHost;
 
     public AbstractSSHClient(CertAuthInfo authInfo, String remoteHost) {
+        this(authInfo, remoteHost, "localhost");
+    }
+
+    public AbstractSSHClient(CertAuthInfo authInfo, String viaGateway, String remoteHost) {
         this.authInfo = authInfo;
+        this.viaGateway = viaGateway;
         this.remoteHost = remoteHost;
     }
 
@@ -40,6 +46,8 @@ public abstract class AbstractSSHClient implements SSHClient {
     protected CertAuthInfo getAuthInfo() {
         return authInfo;
     }
+
+    protected String getViaGateway() { return viaGateway; }
 
     protected String getRemoteHost() {
         return remoteHost;
