@@ -80,7 +80,6 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
      */
     private void parseConfig(String configurationNamePrefix, String jsonConfig) throws InvalidJsonConfigurationException {
         Gson gson = new Gson();
-        System.out.println(jsonConfig);
         @SuppressWarnings("unchecked") Map<String, Map<String, Object>> configurations = (Map<String, Map<String, Object>>) ((List<Object>) gson.fromJson(jsonConfig, ArrayList.class)).get(1);
         for (String configurationName : configurations.keySet()) {
             put(configurationNamePrefix + configurationName, parseConfig(configurations.get(configurationName)));

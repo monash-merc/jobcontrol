@@ -57,4 +57,4 @@ the list may be specified either as a comma-separated list, or by repeating the 
 **guac** block:
 
 :code:`guacd-host` is the host to which the VNC connection is forwarded. Currently this should always be localhost.
-:code:`guac-mysql-...` all relate to MySQL database connection credentials (host, port, user name, password, and database name).
+:code:`guac-mysql-...` all relate to MySQL database connection credentials (host, localPort, user name, password, and database name).

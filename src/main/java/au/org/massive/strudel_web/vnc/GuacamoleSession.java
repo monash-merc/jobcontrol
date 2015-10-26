@@ -9,27 +9,16 @@ public class GuacamoleSession {
     private static int instanceCount = 0;
     private int id;
     private String name;
-    private String hostName;
-    private int port;
+    private String guacHostName;
+    private int localPort;
+    private String remoteHost;
+    private int remotePort;
     private String protocol;
     private String password;
-    private GuacamoleUser user;
 
     public GuacamoleSession() {
-        this(null, null, 0, null, null, null);
-    }
-
-    public GuacamoleSession(String name, String hostName, int port,
-                            String protocol, String password, GuacamoleUser user) {
-        super();
         instanceCount ++;
         this.id = instanceCount;
-        this.name = name;
-        this.hostName = hostName;
-        this.port = port;
-        this.protocol = protocol;
-        this.password = password;
-        this.user = user;
     }
 
     public int getId() {
@@ -48,20 +37,28 @@ public class GuacamoleSession {
         this.name = name;
     }
 
-    public String getHostName() {
-        return hostName;
+    public int getLocalPort() {
+        return localPort;
     }
 
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
+    public void setLocalPort(int port) {
+        this.localPort = port;
     }
 
-    public int getPort() {
-        return port;
+    public String getRemoteHost() {
+        return remoteHost;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setRemoteHost(String remoteHost) {
+        this.remoteHost = remoteHost;
+    }
+
+    public int getRemotePort() {
+        return remotePort;
+    }
+
+    public void setRemotePort(int port) {
+        this.remotePort = port;
     }
 
     public String getProtocol() {
@@ -80,21 +77,17 @@ public class GuacamoleSession {
         this.password = password;
     }
 
-    public GuacamoleUser getUser() {
-        return user;
-    }
-
-    public void setUser(GuacamoleUser user) {
-        this.user = user;
-    }
-
     public String toString() {
-        return getProtocol()+"://"+getHostName()+":"+getPort()+"/"+getName();
+        return getProtocol()+"://"+ getRemoteHost()+":"+ getRemotePort()+"/";
     }
 
     @Override
     public boolean equals(Object o) {
-        return toString().equals(o);
+        if (o instanceof GuacamoleSession) {
+            return toString().equals(o.toString());
+        } else {
+            return false;
+        }
     }
 
     @Override

@@ -1,7 +1,6 @@
 package au.org.massive.strudel_web.vnc;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -77,10 +76,23 @@ public class GuacamoleSessionManager implements ServletContextListener {
         try {
             guacSession.setName(desktopName);
             guacSession.setPassword(vncPassword);
-            guacSession.setHostName(settings.getGuacdHost());
+            guacSession.setRemoteHost(remoteHost.equals("localhost")?viaGateway:remoteHost);
             guacSession.setProtocol("vnc");
-            guacSession.setPort(startTunnel(viaGateway, remoteHost, remotePort, session));
-            guacSession.setUser(new GuacamoleUser(0, session.getCertificate().getUserName(), session.getUserEmail()));
+            guacSession.setRemotePort(remotePort);
+
+            // Avoid creating duplicate guacamole tunnels
+            if (session.getGuacamoleSessionsSet().contains(guacSession)) {
+                for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
+                    if (s.equals(guacSession)) {
+                        s.setName(desktopName);
+                        s.setPassword(vncPassword);
+                        return s;
+                    }
+                }
+            } else {
+                guacSession.setLocalPort(startTunnel(viaGateway, remoteHost, remotePort, session));
+            }
+
             session.getGuacamoleSessionsSet().add(guacSession);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -89,7 +101,7 @@ public class GuacamoleSessionManager implements ServletContextListener {
     }
 
     public static void endSession(GuacamoleSession guacSession, Session session) {
-        stopTunnel(guacSession.getPort());
+        stopTunnel(guacSession.getLocalPort());
         session.getGuacamoleSessionsSet().remove(guacSession);
     }
 

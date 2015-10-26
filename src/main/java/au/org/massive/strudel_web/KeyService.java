@@ -136,9 +136,6 @@ public class KeyService {
         OAuthClientRequest apiRequest = new OAuthBearerClientRequest(authBackend.getSshApiEndpoint().toString())
                 .setAccessToken(oauthAccessToken)
                 .buildQueryMessage();
-        for (String headerKey : apiRequest.getHeaders().keySet()) {
-            System.out.println(headerKey + ": " + apiRequest.getHeader(headerKey));
-        }
         apiRequest.setHeader(OAuth.HeaderType.CONTENT_TYPE, "application/json");
 
         Map<String, String> data = new HashMap<>();
