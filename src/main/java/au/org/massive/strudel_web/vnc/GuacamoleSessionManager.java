@@ -62,14 +62,24 @@ public class GuacamoleSessionManager implements ServletContextListener {
     }
 
 
-    public static GuacamoleSession startSession(String desktopName, String vncPassword, String remoteHost, int remotePort, Session session) {
+    /**
+     * Starts a Guacamole session
+     * @param desktopName name to assign to desktop
+     * @param vncPassword password to access VNC session
+     * @param viaGateway the remote SSH server gateway
+     * @param remoteHost the target of the tunnel
+     * @param remotePort the remote port of the tunnel
+     * @param session current session object
+     * @return a GuacamoleSession with active tunnel
+     */
+    public static GuacamoleSession startSession(String desktopName, String vncPassword, String viaGateway, String remoteHost, int remotePort, Session session) {
         GuacamoleSession guacSession = new GuacamoleSession();
         try {
             guacSession.setName(desktopName);
             guacSession.setPassword(vncPassword);
             guacSession.setHostName(settings.getGuacdHost());
             guacSession.setProtocol("vnc");
-            guacSession.setPort(startTunnel(remoteHost, remotePort, session));
+            guacSession.setPort(startTunnel(viaGateway, remoteHost, remotePort, session));
             guacSession.setUser(new GuacamoleUser(0, session.getCertificate().getUserName(), session.getUserEmail()));
             session.getGuacamoleSessionsSet().add(guacSession);
         } catch (IOException e) {
@@ -83,8 +93,8 @@ public class GuacamoleSessionManager implements ServletContextListener {
         session.getGuacamoleSessionsSet().remove(guacSession);
     }
 
-    private static int startTunnel(String remoteHost, int remotePort, Session session) throws IOException {
-        ForkedSSHClient sshClient = new ForkedSSHClient(session.getCertificate(), remoteHost);
+    private static int startTunnel(String viaGateway, String remoteHost, int remotePort, Session session) throws IOException {
+        ForkedSSHClient sshClient = new ForkedSSHClient(session.getCertificate(), viaGateway, remoteHost);
         Tunnel t = sshClient.startTunnel(remotePort, 0);
         sshTunnels.put(t.getLocalPort(), t);
         return t.getLocalPort();

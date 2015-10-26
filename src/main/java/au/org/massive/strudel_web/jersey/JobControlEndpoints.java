@@ -254,6 +254,8 @@ public class JobControlEndpoints extends Endpoint {
      * @param vncPassword the password of the vnc server
      * @param remoteHost the host on which the vnc server is running
      * @param display the display number assigned to the vnc server
+     * @param viaGateway a gateway through which the tunnel is created (optional, can be inferred if configurationName provided)
+     * @param configurationName the name of the configuration used for this tunnel (optional, recommended)
      * @param request the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a vnc session id and desktop name
@@ -267,13 +269,26 @@ public class JobControlEndpoints extends Endpoint {
             @QueryParam("vncpassword") String vncPassword,
             @QueryParam("remotehost") String remoteHost,
             @QueryParam("display") int display,
+            @QueryParam("via_gateway") String viaGateway,
+            @QueryParam("configuration") String configurationName,
             @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
             return null;
         }
         int remotePort = display + 5900;
-        GuacamoleSession guacSession = GuacamoleSessionManager.startSession(desktopName, vncPassword, remoteHost, remotePort, session);
+
+        // This code uses the configuration, if provided, to determine whether the tunnel should use
+        // the login host as a gateway, or whether the tunnel is direct to the target.
+        AbstractSystemConfiguration systemConfiguration = settings.getSystemConfigurations().getSystemConfigurationById(configurationName);
+        if (viaGateway == null && (systemConfiguration == null || !systemConfiguration.isTunnelTerminatedOnLoginHost())) {
+            viaGateway = remoteHost;
+            remoteHost = "localhost";
+        } else if (viaGateway == null) {
+            viaGateway = systemConfiguration.getLoginHost();
+        }
+
+        GuacamoleSession guacSession = GuacamoleSessionManager.startSession(desktopName, vncPassword, viaGateway, remoteHost, remotePort, session);
 
         Gson gson = new Gson();
         Map<String, Object> responseData = new HashMap<>();

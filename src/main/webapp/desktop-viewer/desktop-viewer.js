@@ -111,7 +111,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                         'desktopname': vncInfo.desktopName,
                                         'vncpassword': vncInfo.password,
                                         'remotehost': vncInfo.host,
-                                        'display': vncInfo.display.replace(":", "")
+                                        'display': vncInfo.display.replace(":", ""),
+                                        'configuration': configurationName
                                     }).$promise
                                         .then(function (newTunnel) {
                                             vncInfo.port = newTunnel.localPort;
