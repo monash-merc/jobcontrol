@@ -66,7 +66,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                         'host': host,
                                         'display': data[0].vncDisplay
                                     };
-                                } catch (e if e instanceof TypeError) {
+                                } catch (e) {
                                     // Desktop not really ready - try reloading and starting again
                                     $location.reload();
                                 }
