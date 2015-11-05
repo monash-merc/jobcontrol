@@ -60,11 +60,16 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                             'host': host
                         }).$promise
                             .then(function (data) {
-                                return {
-                                    'desktopName': desktopName,
-                                    'host': host,
-                                    'display': data[0].vncDisplay
-                                };
+                                try {
+                                    return {
+                                        'desktopName': desktopName,
+                                        'host': host,
+                                        'display': data[0].vncDisplay
+                                    };
+                                } catch (e) {
+                                    // Desktop not really ready - try reloading and starting again
+                                    $location.reload();
+                                }
                             },
                             function (error) {
                                 $rootScope.$broadcast("notify", "Could not get the display number for this desktop!");
