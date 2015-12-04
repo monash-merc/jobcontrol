@@ -24,15 +24,25 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
 
     private final Map<String, TaskParameters> configurations;
     private final String loginHost;
+    private final boolean terminateTunnelOnLoginHost;
 
     public AbstractSystemConfiguration(String loginHost) {
+        this(loginHost, false);
+    }
+
+    public AbstractSystemConfiguration(String loginHost, boolean terminateTunnelOnLoginHost) {
         authBackendNames = new LinkedList<>();
         configurations = new HashMap<>();
         this.loginHost = loginHost;
+        this.terminateTunnelOnLoginHost = terminateTunnelOnLoginHost;
     }
 
-    protected String getLoginHost() {
+    public String getLoginHost() {
         return loginHost;
+    }
+
+    public boolean isTunnelTerminatedOnLoginHost() {
+        return terminateTunnelOnLoginHost;
     }
 
     public void addAuthBackend(String name) {

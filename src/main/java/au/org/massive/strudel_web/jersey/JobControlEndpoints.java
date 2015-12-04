@@ -1,39 +1,25 @@
 
 package au.org.massive.strudel_web.jersey;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
+import au.org.massive.strudel_web.*;
 import au.org.massive.strudel_web.job_control.*;
-import au.org.massive.strudel_web.vnc.GuacamoleDB;
-import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-
-import au.org.massive.strudel_web.KeyService;
-import au.org.massive.strudel_web.NoSuchSessionException;
-import au.org.massive.strudel_web.Session;
-import au.org.massive.strudel_web.SessionManager;
-import au.org.massive.strudel_web.Settings;
-import au.org.massive.strudel_web.UnauthorizedException;
 import au.org.massive.strudel_web.job_control.TaskFactory.Task;
 import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
-
 import com.google.gson.Gson;
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Endpoints that act on an HPC system
@@ -49,7 +35,7 @@ public class JobControlEndpoints extends Endpoint {
      * Gets (and creates, if necessary) a session and returns the id and whether the session
      * currently has a certificate associated with it.
      *
-     * @param request
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
      * @return a json object with some session info
      */
     @GET
@@ -91,10 +77,10 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Gets a key pair and get the public key signed
      *
-     * @param request
-     * @param response
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
-     * @throws IOException
+     * @throws IOException thrown on network IO errors
      */
     @GET
     @Path("register_key")
@@ -129,10 +115,10 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Triggers a session logout
      *
-     * @param request
-     * @param response
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
-     * @throws IOException
+     * @throws IOException thrown on network IO errors
      */
     @GET
     @Path("end_session")
@@ -152,12 +138,12 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
      *
-     * @param task
-     * @param request
-     * @param response
+     * @param task the name of the task to run
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return the result of the command
-     * @throws IOException
-     * @throws SSHExecException
+     * @throws IOException thrown on network IO errors
+     * @throws SSHExecException thrown if there are any issues executing the task via SSH
      */
     @GET
     @Path("/execute/{task}/")
@@ -166,6 +152,17 @@ public class JobControlEndpoints extends Endpoint {
         return executeJob(null, task, null, request, response);
     }
 
+    /**
+     * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
+     *
+     * @param host the name of the host on which to run the task
+     * @param task the name of the task to run
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @return the result of the command
+     * @throws IOException thrown on network IO errors
+     * @throws SSHExecException thrown if there are any issues executing the task via SSH
+     */
     @GET
     @Path("/execute/{task}/on/{host}/")
     @Produces("application/json")
@@ -173,6 +170,17 @@ public class JobControlEndpoints extends Endpoint {
         return executeJob(host, task, null, request, response);
     }
 
+    /**
+     * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
+     *
+     * @param configuration the name of the configuration from which the task should be run
+     * @param task the name of the task to run
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @return the result of the command
+     * @throws IOException thrown on network IO errors
+     * @throws SSHExecException thrown if there are any issues executing the task via SSH
+     */
     @GET
     @Path("/execute/{task}/in/{configuration}/")
     @Produces("application/json")
@@ -180,6 +188,18 @@ public class JobControlEndpoints extends Endpoint {
         return executeJob(null, task, configuration, request, response);
     }
 
+    /**
+     * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
+     *
+     * @param host the name of the host on which to run the task
+     * @param configuration the name of the configuration from which the task should be run
+     * @param task the name of the task to run
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @return the result of the command
+     * @throws IOException thrown on network IO errors
+     * @throws SSHExecException thrown if there are any issues executing the task via SSH
+     */
     @GET
     @Path("/execute/{task}/in/{configuration}/on/{host}/")
     @Produces("application/json")
@@ -230,14 +250,16 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Starts a VNC tunnel for use with a Guacamole server
      *
-     * @param desktopName
-     * @param vncPassword
-     * @param remoteHost
-     * @param display
-     * @param request
-     * @param response
+     * @param desktopName the name to assign to the desktop
+     * @param vncPassword the password of the vnc server
+     * @param remoteHost the host on which the vnc server is running
+     * @param display the display number assigned to the vnc server
+     * @param viaGateway a gateway through which the tunnel is created (optional, can be inferred if configurationName provided)
+     * @param configurationName the name of the configuration used for this tunnel (optional, recommended)
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a vnc session id and desktop name
-     * @throws IOException
+     * @throws IOException thrown on network IO errors
      */
     @GET
     @Path("/startvnctunnel")
@@ -247,66 +269,43 @@ public class JobControlEndpoints extends Endpoint {
             @QueryParam("vncpassword") String vncPassword,
             @QueryParam("remotehost") String remoteHost,
             @QueryParam("display") int display,
+            @QueryParam("via_gateway") String viaGateway,
+            @QueryParam("configuration") String configurationName,
             @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
             return null;
         }
         int remotePort = display + 5900;
-        GuacamoleSession guacSession = GuacamoleSessionManager.startSession(desktopName, vncPassword, remoteHost, remotePort, session);
+
+        // This code uses the configuration, if provided, to determine whether the tunnel should use
+        // the login host as a gateway, or whether the tunnel is direct to the target.
+        AbstractSystemConfiguration systemConfiguration = settings.getSystemConfigurations().getSystemConfigurationById(configurationName);
+        if (viaGateway == null && (systemConfiguration == null || !systemConfiguration.isTunnelTerminatedOnLoginHost())) {
+            viaGateway = remoteHost;
+            remoteHost = "localhost";
+        } else if (viaGateway == null) {
+            viaGateway = systemConfiguration.getLoginHost();
+        }
+
+        GuacamoleSession guacSession = GuacamoleSessionManager.startSession(desktopName, vncPassword, viaGateway, remoteHost, remotePort, session);
 
         Gson gson = new Gson();
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("id", guacSession.getId());
         responseData.put("desktopName", desktopName);
-        return gson.toJson(responseData);
-    }
-
-    @GET
-    @Path("/updatevncpwd")
-    @Produces("application/json")
-    public String updateVncPassword(@QueryParam("desktopname") String desktopName,
-                                    @QueryParam("vncpassword") String newPassword,
-                                    @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
-        Session session = getSessionWithCertificateOrSendError(request, response);
-        if (session == null) {
-            return null;
-        }
-
-        boolean done = false;
-        for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
-            if (s.getName().equals(desktopName)) {
-                s.setPassword(newPassword);
-                try {
-                    GuacamoleDB.updateSession(s);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    break;
-                }
-                done = true;
-                break;
-            }
-        }
-
-        Gson gson = new Gson();
-        Map<String, Object> responseData = new HashMap<>();
-        if (done) {
-            responseData.put("message", "password updated");
-        } else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "could not update vnc password");
-            return null;
-        }
+        responseData.put("localPort", guacSession.getLocalPort());
         return gson.toJson(responseData);
     }
 
     /**
      * Stops a guacamole VNC session
      *
-     * @param guacSessionId
-     * @param request
-     * @param response
+     * @param guacSessionId id of the vnc tunnel session
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
-     * @throws IOException
+     * @throws IOException thrown on network IO errors
      */
     @GET
     @Path("/stopvnctunnel")
@@ -342,10 +341,10 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Lists all active VNC sessions for the current user
      *
-     * @param request
-     * @param response
-     * @return
-     * @throws IOException
+     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @return a list of tunnels
+     * @throws IOException thrown on network IO errors
      */
     @GET
     @Path("/listvnctunnels")
@@ -364,6 +363,7 @@ public class JobControlEndpoints extends Endpoint {
             tunnel.put("id", s.getId());
             tunnel.put("desktopName", s.getName());
             tunnel.put("password", s.getPassword());
+            tunnel.put("localPort", s.getLocalPort());
         }
 
         Gson gson = new Gson();

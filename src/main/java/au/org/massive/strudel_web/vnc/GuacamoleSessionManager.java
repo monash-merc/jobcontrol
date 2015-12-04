@@ -1,7 +1,6 @@
 package au.org.massive.strudel_web.vnc;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -42,11 +41,6 @@ public class GuacamoleSessionManager implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent arg0) {
-        try {
-            GuacamoleDB.cleanDb();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         final long FIVE_SECONDS = 5000;
         tunnelCleaner.schedule(new TimerTask() {
 
@@ -67,38 +61,52 @@ public class GuacamoleSessionManager implements ServletContextListener {
     }
 
 
-    public static GuacamoleSession startSession(String desktopName, String vncPassword, String remoteHost, int remotePort, Session session) {
+    /**
+     * Starts a Guacamole session
+     * @param desktopName name to assign to desktop
+     * @param vncPassword password to access VNC session
+     * @param viaGateway the remote SSH server gateway
+     * @param remoteHost the target of the tunnel
+     * @param remotePort the remote port of the tunnel
+     * @param session current session object
+     * @return a GuacamoleSession with active tunnel
+     */
+    public static GuacamoleSession startSession(String desktopName, String vncPassword, String viaGateway, String remoteHost, int remotePort, Session session) {
         GuacamoleSession guacSession = new GuacamoleSession();
         try {
             guacSession.setName(desktopName);
             guacSession.setPassword(vncPassword);
-            guacSession.setHostName(settings.getGuacdHost());
+            guacSession.setRemoteHost(remoteHost.equals("localhost")?viaGateway:remoteHost);
             guacSession.setProtocol("vnc");
-            guacSession.setPort(startTunnel(remoteHost, remotePort, session));
-            guacSession.setUser(new GuacamoleUser(0, session.getCertificate().getUserName(), session.getUserEmail()));
-            GuacamoleDB.createSession(guacSession);
-            if (guacSession.getId() > -1) { // A session of -1 indicates failure (i.e. attempt at creating a duplicate tunnel
-                // so don't add it to the set.
-                session.getGuacamoleSessionsSet().add(guacSession);
+            guacSession.setRemotePort(remotePort);
+
+            // Avoid creating duplicate guacamole tunnels
+            if (session.getGuacamoleSessionsSet().contains(guacSession)) {
+                for (GuacamoleSession s : session.getGuacamoleSessionsSet()) {
+                    if (s.equals(guacSession)) {
+                        s.setName(desktopName);
+                        s.setPassword(vncPassword);
+                        return s;
+                    }
+                }
+            } else {
+                guacSession.setLocalPort(startTunnel(viaGateway, remoteHost, remotePort, session));
             }
-        } catch (SQLException | IOException e) {
+
+            session.getGuacamoleSessionsSet().add(guacSession);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return guacSession;
     }
 
     public static void endSession(GuacamoleSession guacSession, Session session) {
-        stopTunnel(guacSession.getPort());
-        try {
-            GuacamoleDB.deleteSession(guacSession);
-            session.getGuacamoleSessionsSet().remove(guacSession);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        stopTunnel(guacSession.getLocalPort());
+        session.getGuacamoleSessionsSet().remove(guacSession);
     }
 
-    private static int startTunnel(String remoteHost, int remotePort, Session session) throws IOException {
-        ForkedSSHClient sshClient = new ForkedSSHClient(session.getCertificate(), remoteHost);
+    private static int startTunnel(String viaGateway, String remoteHost, int remotePort, Session session) throws IOException {
+        ForkedSSHClient sshClient = new ForkedSSHClient(session.getCertificate(), viaGateway, remoteHost);
         Tunnel t = sshClient.startTunnel(remotePort, 0);
         sshTunnels.put(t.getLocalPort(), t);
         return t.getLocalPort();

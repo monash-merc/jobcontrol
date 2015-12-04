@@ -38,6 +38,11 @@ public class ForkedSSHClient extends AbstractSSHClient {
         this.authInfo = authInfo;
     }
 
+    public ForkedSSHClient(CertAuthInfo authInfo, String viaGateway, String remoteHost) {
+        super(authInfo, viaGateway, remoteHost);
+        this.authInfo = authInfo;
+    }
+
     private class CertFiles implements Closeable {
         private final File tempDirectory;
         private final File privKeyFile;
@@ -92,10 +97,10 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Starts an SSH tunnel
      *
-     * @param remotePort
-     * @param maxUptimeInSeconds
-     * @return
-     * @throws IOException
+     * @param remotePort the port to forward
+     * @param maxUptimeInSeconds the maximum length of time for the tunnel to remain open. Zero represents infinity.
+     * @return a {@link Tunnel} object
+     * @throws IOException thrown on errors reading data streams
      */
     public Tunnel startTunnel(final int remotePort, int maxUptimeInSeconds) throws IOException {
         final int localPort = findFreePort();
@@ -110,7 +115,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
             @Override
             public String call() throws Exception {
                 Map<String, String> tunnelFlags = new HashMap<>();
-                tunnelFlags.put("-L" + localPort + ":localhost:" + remotePort, "");
+                tunnelFlags.put("-L" + localPort + ":"+getRemoteHost()+":" + remotePort, "");
                 return exec("sleep infinity", tunnelFlags, watchdog);
             }
 
@@ -149,7 +154,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Executes a remote command
      *
-     * @param remoteCommands
+     * @param remoteCommands commands to execute
      * @param watchdog       can be used to kill runaway processes
      * @return the command results
      */
@@ -161,12 +166,12 @@ public class ForkedSSHClient extends AbstractSSHClient {
     /**
      * Exeucte a remote command
      *
-     * @param remoteCommands
+     * @param remoteCommands commands to execute
      * @param extraFlags     a map of flags and arguments for the SSH process; map values are allowed to be empty or null
-     * @param watchdog
+     * @param watchdog can be used to kill runaway processes
      * @return the command results
-     * @throws IOException
-     * @throws SSHExecException
+     * @throws IOException thrown on errors reading data streams
+     * @throws SSHExecException thrown on errors caused during SSH command execution
      */
     public String exec(String remoteCommands, Map<String, String> extraFlags, ExecuteWatchdog watchdog) throws IOException, SSHExecException {
         CertFiles certFiles = new CertFiles(authInfo);
@@ -180,7 +185,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
         cmdLine.addArgument("-oKbdInteractiveAuthentication=no");
         cmdLine.addArgument("-l");
         cmdLine.addArgument(getAuthInfo().getUserName());
-        cmdLine.addArgument(getRemoteHost());
+        cmdLine.addArgument(getViaGateway());
 
         // Add extra flags
         if (extraFlags != null && extraFlags.size() > 0) {

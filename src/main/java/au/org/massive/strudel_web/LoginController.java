@@ -30,7 +30,7 @@ public class LoginController extends HttpServlet {
     }
 
     /**
-     * @throws IOException
+     * @throws IOException thrown on network IO errors
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

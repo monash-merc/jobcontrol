@@ -21,7 +21,7 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
      * Constructor accepting JSON configuration as a string
      *
      * @param jsonConfig JSON configuration
-     * @throws InvalidJsonConfigurationException
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     public StrudelDesktopConfigurationAdapter(String jsonConfig) throws InvalidJsonConfigurationException {
         this("", jsonConfig);
@@ -31,8 +31,8 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
      * Constructor accepting a URL pointing to the JSON configuration
      *
      * @param url of the configuration file
-     * @throws IOException
-     * @throws InvalidJsonConfigurationException
+     * @throws IOException thrown on network IO errors
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     public StrudelDesktopConfigurationAdapter(URL url) throws IOException, InvalidJsonConfigurationException {
         this("", url);
@@ -43,7 +43,7 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
      *
      * @param configurationNamePrefix a string added to each configuration, e.g. the facility name
      * @param jsonConfig JSON configuration
-     * @throws InvalidJsonConfigurationException
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     public StrudelDesktopConfigurationAdapter(String configurationNamePrefix, String jsonConfig) throws InvalidJsonConfigurationException {
         parseConfig(configurationNamePrefix, jsonConfig);
@@ -54,8 +54,8 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
      *
      * @param configurationNamePrefix a string added to each configuration, e.g. the facility name
      * @param url of the configuration file
-     * @throws IOException
-     * @throws InvalidJsonConfigurationException
+     * @throws IOException thrown on network IO errors
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     public StrudelDesktopConfigurationAdapter(String configurationNamePrefix, URL url) throws IOException, InvalidJsonConfigurationException {
         BufferedReader in = new BufferedReader(
@@ -74,12 +74,12 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
     /**
      * Iterates over each "flavour" in the JSON file and extracts the appropriate configuraiton parameters
      *
+     * @param configurationNamePrefix a string to be prepended to each configuration. Used to avoid naming conflicts when multiple configurations are loaded.
      * @param jsonConfig JSON configuration text
-     * @throws InvalidJsonConfigurationException
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     private void parseConfig(String configurationNamePrefix, String jsonConfig) throws InvalidJsonConfigurationException {
         Gson gson = new Gson();
-        System.out.println(jsonConfig);
         @SuppressWarnings("unchecked") Map<String, Map<String, Object>> configurations = (Map<String, Map<String, Object>>) ((List<Object>) gson.fromJson(jsonConfig, ArrayList.class)).get(1);
         for (String configurationName : configurations.keySet()) {
             put(configurationNamePrefix + configurationName, parseConfig(configurations.get(configurationName)));
@@ -89,9 +89,9 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
     /**
      * Extracts the useful functions from the flavour
      *
-     * @param config a Map of objects for each function
+     * @param config a {@link Map} of objects for each function
      * @return a system configuration object
-     * @throws InvalidJsonConfigurationException
+     * @throws InvalidJsonConfigurationException thrown if invalid JSON configuration is encountered
      */
     private JsonSystemConfiguration parseConfig(Map<String, Object> config) throws InvalidJsonConfigurationException {
 
@@ -110,6 +110,10 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
 
         Map<String, Object> parsedConfig = new HashMap<>();
         parsedConfig.put("loginHost", loginHost);
+        //noinspection unchecked
+        parsedConfig.put("isTunnelTerminatedOnLoginHost", isTunnelTerminatedOnLoginHost(
+                (String) ((Map<String, Object>) config.get("tunnel")).get("cmd")
+        ));
         Map<String, Object> tasks = new HashMap<>();
         parsedConfig.put("tasks", tasks);
 
@@ -133,6 +137,15 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
         tasks.put("vncdisplay", extractFunctionFromStrudelConfig("vncDisplay", config));
 
         return JsonSystemConfiguration.getInstance(parsedConfig);
+    }
+
+    /**
+     * Attempts to determine whether the vnc tunnels need to terminate at the login or execution host
+     * @param sshCommand the ssh command from the json file
+     * @return true if the tunnel is terminated on the login host
+     */
+    private boolean isTunnelTerminatedOnLoginHost(String sshCommand) {
+        return sshCommand.contains("{localPortNumber}:{execHost}:{remotePortNumber}");
     }
 
     /**
