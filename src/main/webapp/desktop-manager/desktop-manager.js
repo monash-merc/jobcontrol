@@ -103,6 +103,7 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                 $rootScope.$broadcast("notify", "Deleting desktop #" + desktopId + "...");
                 stopDesktopResource.get({
                     'jobidNumber': desktopId,
+                    'jobid': desktopId,
                     'configuration': configuration.configuration.fullName
                 }).$promise.then(
                     function (data) {

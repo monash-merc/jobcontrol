@@ -149,7 +149,7 @@ public class JobControlEndpoints extends Endpoint {
     @Path("/execute/{task}/")
     @Produces("application/json")
     public String executeJob0(@PathParam("task") String task, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
-        return executeJob(null, task, null, request, response);
+        return executeJob(null, task, null, request, response, 0);
     }
 
     /**
@@ -167,7 +167,7 @@ public class JobControlEndpoints extends Endpoint {
     @Path("/execute/{task}/on/{host}/")
     @Produces("application/json")
     public String executeJob1(@PathParam("host") String host, @PathParam("task") String task, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
-        return executeJob(host, task, null, request, response);
+        return executeJob(host, task, null, request, response, 0);
     }
 
     /**
@@ -185,7 +185,7 @@ public class JobControlEndpoints extends Endpoint {
     @Path("/execute/{task}/in/{configuration}/")
     @Produces("application/json")
     public String executeJob2(@PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
-        return executeJob(null, task, configuration, request, response);
+        return executeJob(null, task, configuration, request, response, 0);
     }
 
     /**
@@ -203,7 +203,7 @@ public class JobControlEndpoints extends Endpoint {
     @GET
     @Path("/execute/{task}/in/{configuration}/on/{host}/")
     @Produces("application/json")
-    public String executeJob(@PathParam("host") String host, @PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
+    public String executeJob(@PathParam("host") String host, @PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("0") @QueryParam("retries") Integer retries) throws IOException, SSHExecException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
             return null;
@@ -227,23 +227,31 @@ public class JobControlEndpoints extends Endpoint {
             } else {
                 remoteTask = new TaskFactory(systemConfiguration).getInstance(task, session, host);
             }
+
+            Map<String, String> parameters = new HashMap<>();
+            for (String key : request.getParameterMap().keySet()) {
+                String value = request.getParameterMap().get(key)[0]; // Only one value is accepted
+                parameters.put(key, value);
+            }
+
+            try {
+                return remoteTask.runJsonResult(parameters);
+            } catch (MissingRequiredTaskParametersException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+                return null;
+            } catch (SSHExecException e1) {
+                // If this request fails, try using the default remote host
+                if (retries < 1 && !systemConfiguration.findByTaskType(task).getRemoteHost().isEmpty()) {
+                    return executeJob(null, task, configuration, request, response, 1);
+                } else {
+                    throw e1;
+                }
+            }
         } catch (NoSuchTaskTypeException e) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
 
-        Map<String, String> parameters = new HashMap<>();
-        for (String key : request.getParameterMap().keySet()) {
-            String value = request.getParameterMap().get(key)[0]; // Only one value is accepted
-            parameters.put(key, value);
-        }
-
-        try {
-            return remoteTask.runJsonResult(parameters);
-        } catch (MissingRequiredTaskParametersException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            return null;
-        }
     }
 
 
