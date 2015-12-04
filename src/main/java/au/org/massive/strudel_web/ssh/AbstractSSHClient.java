@@ -47,7 +47,12 @@ public abstract class AbstractSSHClient implements SSHClient {
 
     @Override
     public String exec(String remoteCommands) throws IOException, SSHExecException {
-        return exec(remoteCommands, null);
+        try {
+            return exec(remoteCommands, null);
+        } catch (SSHExecException e) {
+            System.err.println("Error running command "+remoteCommands+" on host "+remoteHost);
+            throw e;
+        }
     }
 
     @Override

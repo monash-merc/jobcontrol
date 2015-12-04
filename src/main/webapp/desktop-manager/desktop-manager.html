@@ -99,6 +99,14 @@
                                         <input required type="number" min="1" ng-model="newDesktop.hours"
                                                ng-disabled="desktopLaunchInProgress()">
                                     </md-input-container>
+                                    <md-input-container ng-if="selectedConfiguration.configuration.projects">
+                                        <label>Project</label>
+                                        <md-select ng-model="newDesktop.project" ng-disabled="desktopLaunchInProgress()">
+                                            <md-option ng-repeat="p in selectedConfiguration.configuration.projects" value="{{ p }}">
+                                                {{ p }}
+                                            </md-option>
+                                        </md-select>
+                                    </md-input-container>
                                 </div>
                             </div>
                             <span flex></span>

@@ -182,7 +182,12 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
     private static String getCommandPattern(String functionName, Map<String, Object> configObject) {
         // Remove enclosing quotes
         @SuppressWarnings("unchecked") String cmdPattern = (String) (((Map<String, Object>) configObject.get(functionName)).get("cmd"));
-        return convertCommandPattern(cmdPattern.replaceAll("^\"(.*)\"$", "$1"));
+        cmdPattern = convertCommandPattern(cmdPattern.replaceAll("^\"(.*)\"$", "$1").replaceAll("^'(.*)'$", "$1"));
+
+        // Some json config files use 'sessionid' instead of 'jobid'; convert all sessionids to jobids
+        cmdPattern = cmdPattern.replaceAll("\\$\\{sessionid\\}", "\\${jobid}");
+
+        return cmdPattern;
     }
 
     /**
@@ -221,6 +226,9 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
         if (RegexHelper.getNamedGroupCandidates(regex).size() == 0) {
             regex = "(?<output>" + regex + ")";
         }
+
+        // Some json config files use 'sessionid' instead of 'jobid'; convert all sessionids to jobids
+        regex = regex.replaceAll("\\(\\?<sessionid>", "(?<jobid>");
 
         return regex;
     }

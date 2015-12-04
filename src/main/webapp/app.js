@@ -23,6 +23,7 @@ angular.module('strudelWeb', [
             'logout': 'end_session',
             'sessionInfo': 'session_info',
             'registerKey': 'register_key',
+            'getProjects': 'execute/getprojects',
             'startDesktop': 'execute/startserver',
             'stopDesktop': 'execute/stop',
             'listDesktops': 'execute/listall',
