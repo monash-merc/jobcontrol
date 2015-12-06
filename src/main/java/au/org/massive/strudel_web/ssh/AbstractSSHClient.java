@@ -58,7 +58,7 @@ public abstract class AbstractSSHClient implements SSHClient {
         try {
             return exec(remoteCommands, null);
         } catch (SSHExecException e) {
-            System.err.println("Error running command "+remoteCommands+" on host "+remoteHost);
+            System.err.println("Error running command "+remoteCommands+" on host "+remoteHost + " via "+viaGateway);
             throw e;
         }
     }
