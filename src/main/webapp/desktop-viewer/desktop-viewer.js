@@ -130,6 +130,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
 
                             function redirectGuacIframe() {
                                 guacamoleContent.location.hash = "#/client/c/" + vncInfo.desktopName;
+                                guacamoleFrame.contentWindow.focus();
                                 $rootScope.$broadcast("makeToolbarInvisible");
                                 $scope.desktopReady = true;
                             }
