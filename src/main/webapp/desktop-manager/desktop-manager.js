@@ -25,6 +25,11 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                     isArray: true
                 }
             });
+            var getProjectsResource = $resource(settings.URLs.apiBase + settings.URLs.getProjects + "/in/:configuration/", {}, {
+                'get': {
+                    isArray: true
+                }
+            });
             var stopDesktopResource = $resource(settings.URLs.apiBase + settings.URLs.stopDesktop + "/in/:configuration/", {}, {
                 'get': {
                     isArray: true
@@ -58,10 +63,14 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                 $rootScope.$broadcast("notify", "Starting desktop...");
                 parameters.configuration = configuration.configuration.fullName;
                 parameters.username = username;
-                listDesktopsResource.get({
+                var requestParams = {
                     'configuration': parameters.configuration,
                     'username': username
-                }).$promise.then(function (desktops) {
+                };
+                if (parameters.project) {
+                    requestParams['project'] = parameters.project;
+                }
+                listDesktopsResource.get(requestParams).$promise.then(function (desktops) {
                         if (desktops.length >= settings.maxDesktopsAllowed && settings.maxDesktopsAllowed > 0) {
                             launchInProgress = false;
                             $rootScope.$broadcast("notify", "Could not start desktop because it would exceed the limit of "
@@ -94,6 +103,7 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                 $rootScope.$broadcast("notify", "Deleting desktop #" + desktopId + "...");
                 stopDesktopResource.get({
                     'jobidNumber': desktopId,
+                    'jobid': desktopId,
                     'configuration': configuration.configuration.fullName
                 }).$promise.then(
                     function (data) {
@@ -141,7 +151,8 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                                     var id = jobData.jobid;
                                     isDesktopRunningResource.get({
                                         'configuration': configuration.configuration.fullName,
-                                        'jobidNumber': id
+                                        'jobidNumber': id,
+                                        'jobid': id
                                     }).$promise.then(function (running) {
                                             if (flush) {
                                                 $scope.runningDesktops = [];
@@ -219,6 +230,9 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                     mem: parseInt(configuration.startserver.defaultParams.mem),
                     resolution: "1440x900"
                 };
+                if (configuration.projects) {
+                    $scope.newDesktop['project'] = configuration.projects[0];
+                }
             };
 
             // For a given authBackendName, filter all accessible configurations
@@ -233,10 +247,28 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                                 configs[facilityAndFlavour[0]] = {};
                             }
                             c.configurations.fullName = i;
+
+                            // Get available projects (if any) for a configuration
+                            (function(config) {
+                                // Gets a list of projects if supported by backend
+                                getProjectsResource.get({
+                                    'configuration': config.fullName
+                                }).$promise.then(function (projects) {
+                                    config.projects = [];
+                                    for (var i = 0; i < projects.length; i++) {
+                                        var project = projects[i].group;
+                                        if (project !== "") {
+                                            config.projects.push(project);
+                                        }
+                                    }
+                                });
+                            })(c.configurations);
+
                             configs[facilityAndFlavour[0]][facilityAndFlavour[1]] = c.configurations;
                         }
                     }
                 }
+
                 return configs;
             };
 

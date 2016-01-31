@@ -14,8 +14,8 @@
                 <md-list layout-padding>
                     <md-list-item ng-repeat="(configName, configData) in config">
                         <md-button
-                                ng-click="$parent.selected = configName; setSelectedConfiguration(configName, configData); menuToggle(); refreshDesktopList(selectedConfiguration, session.uid);"
-                                ng-class="{ 'md-raised md-primary': $parent.selected == configName }"
+                                ng-click="$parent.$parent.selected = configName; setSelectedConfiguration(configName, configData); menuToggle(); refreshDesktopList(selectedConfiguration, session.uid);"
+                                ng-class="{ 'md-raised md-primary': $parent.$parent.selected == configName }"
                                 ng-disabled="desktopLaunchInProgress()" flex>
                             <div layout="row" flex>{{ configName }}<span flex></span>
                                 <md-icon md-font-set="material-icons">chevron_right</md-icon>
@@ -98,6 +98,14 @@
                                         <label>Time (hours)</label>
                                         <input required type="number" min="1" ng-model="newDesktop.hours"
                                                ng-disabled="desktopLaunchInProgress()">
+                                    </md-input-container>
+                                    <md-input-container ng-if="selectedConfiguration.configuration.projects">
+                                        <label>Project</label>
+                                        <md-select ng-model="newDesktop.project" ng-disabled="desktopLaunchInProgress()">
+                                            <md-option ng-repeat="p in selectedConfiguration.configuration.projects" value="{{ p }}">
+                                                {{ p }}
+                                            </md-option>
+                                        </md-select>
                                     </md-input-container>
                                 </div>
                             </div>

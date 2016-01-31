@@ -4,12 +4,8 @@ import au.org.massive.strudel_web.job_control.*;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import sun.awt.image.ImageWatched;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,10 +14,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Provides settings for the application. Requires "strudel-web.properties" to be in the class path.
@@ -32,12 +24,6 @@ import java.util.Map;
 public class Settings {
 
     private String OAUTH_REDIRECT;
-    private String GUACD_HOST;
-    private String GUAC_MYSQL_HOST;
-    private int GUAC_MYSQL_PORT;
-    private String GUAC_MYSQL_USER_NAME;
-    private String GUAC_MYSQL_PASSWORD;
-    private String GUAC_MYSQL_DB_NAME;
     private ConfigurationRegistry CONFIGURATION_REGISTRY;
 
     private static Settings instance;
@@ -74,6 +60,14 @@ public class Settings {
                         },
                         new SecureRandom());
                 HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+                HostnameVerifier allHostsValid = new HostnameVerifier() {
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                };
+
+                HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
             } catch (KeyManagementException | NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
