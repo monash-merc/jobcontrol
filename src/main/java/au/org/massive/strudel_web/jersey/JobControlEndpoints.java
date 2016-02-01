@@ -425,10 +425,27 @@ public class JobControlEndpoints extends Endpoint {
 
             // Email content
             messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText("Message: \n" +
-                    debugData.note+"\n" +
-                    "--- Additional info ---\n" +
-                    debugData.getBrowserInfo());
+            StringBuilder sb = new StringBuilder();
+            sb.append("User information:\n");
+            if (strudelSession.hasUserEmail()) {
+                sb.append("* Email: " + strudelSession.getUserEmail() + "\n");
+            } else {
+                sb.append("* Email: unknown");
+            }
+            if (strudelSession.hasCertificate()) {
+                sb.append("* User id: " + strudelSession.getCertificate().getUserName() + "\n");
+            } else {
+                sb.append("* User id: unknown\n");
+            }
+            if (strudelSession.getSSHCertSigningBackend() != null) {
+                sb.append("* Service: " + strudelSession.getSSHCertSigningBackend().getName()+"\n");
+            }
+
+            sb.append("Message: \n");
+            sb.append(debugData.note + "\n\n");
+            sb.append("--- Additional info ---\n");
+            sb.append(debugData.getBrowserInfo());
+            messageBodyPart.setText(sb.toString());
             multipart.addBodyPart(messageBodyPart);
 
             // Attachment #1 Screenshot
