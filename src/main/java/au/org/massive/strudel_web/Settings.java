@@ -5,6 +5,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -14,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Properties;
 
 /**
  * Provides settings for the application. Requires "strudel-web.properties" to be in the class path.
@@ -25,6 +28,12 @@ public class Settings {
 
     private String OAUTH_REDIRECT;
     private ConfigurationRegistry CONFIGURATION_REGISTRY;
+
+    private InternetAddress FEEDBACK_TO_ADDRESS;
+    private InternetAddress FEEDBACK_FROM_ADDRESS;
+    private String SMTP_HOST;
+    private int SMTP_PORT;
+    private String FEEDBACK_EMAIL_SUBJECT;
 
     private static Settings instance;
 
@@ -72,6 +81,16 @@ public class Settings {
                 e.printStackTrace();
             }
         }
+
+        SMTP_HOST = config.getString("smtp-host", null);
+        SMTP_PORT = config.getInt("smtp-port", 25);
+        try {
+            FEEDBACK_TO_ADDRESS = config.getString("feedback-to-address", null) != null ? new InternetAddress(config.getString("feedback-to-address")) : null;
+            FEEDBACK_FROM_ADDRESS = new InternetAddress(config.getString("feedback-from-address", "noreply@example.com"));
+        } catch (AddressException e) {
+            throw new RuntimeException(e);
+        }
+        FEEDBACK_EMAIL_SUBJECT = config.getString("feedback-email-subject", "Feedback for Strudel Web");
 
         setupSystemConfigurations(config);
     }
@@ -134,5 +153,30 @@ public class Settings {
 
     public String getOAuthRedirect() {
         return OAUTH_REDIRECT;
+    }
+
+    public Properties getSMTPProperties() {
+        Properties properties = new Properties();
+        if (FEEDBACK_TO_ADDRESS != null && SMTP_HOST != null) {
+            properties.put("mail.smtp.host", SMTP_HOST);
+            properties.put("mail.smtp.port", SMTP_PORT);
+        }
+        return properties;
+    }
+
+    public InternetAddress getFeedbackFromAddress() {
+        return FEEDBACK_FROM_ADDRESS;
+    }
+
+    public InternetAddress getFeedbackToAddress() {
+        return FEEDBACK_TO_ADDRESS;
+    }
+
+    public String getFeedbackEmailSubject() {
+        return FEEDBACK_EMAIL_SUBJECT;
+    }
+
+    public boolean isFeedbackEmailEnabled() {
+        return FEEDBACK_TO_ADDRESS != null;
     }
 }

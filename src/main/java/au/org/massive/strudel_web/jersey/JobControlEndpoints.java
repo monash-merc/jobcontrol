@@ -2,19 +2,32 @@
 package au.org.massive.strudel_web.jersey;
 
 import au.org.massive.strudel_web.*;
+import au.org.massive.strudel_web.Session;
 import au.org.massive.strudel_web.job_control.*;
 import au.org.massive.strudel_web.job_control.TaskFactory.Task;
 import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +44,8 @@ public class JobControlEndpoints extends Endpoint {
 
     private static final Settings settings = Settings.getInstance();
 
+    private static final Logger logger = LogManager.getLogger(JobControlEndpoints.class.getName());
+
     /**
      * Gets (and creates, if necessary) a session and returns the id and whether the session
      * currently has a certificate associated with it.
@@ -40,7 +55,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("session_info")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String getSessionInfo(@Context HttpServletRequest request) {
         Gson gson = new Gson();
         Map<String, String> response = new HashMap<>();
@@ -84,7 +99,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("register_key")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String registerKey(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         Session session = getSession(request);
 
@@ -122,7 +137,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("end_session")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String invalidateSession(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         Gson gson = new Gson();
 
@@ -147,7 +162,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/execute/{task}/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String executeJob0(@PathParam("task") String task, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
         return executeJob(null, task, null, request, response, 0);
     }
@@ -165,7 +180,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/execute/{task}/on/{host}/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String executeJob1(@PathParam("host") String host, @PathParam("task") String task, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
         return executeJob(host, task, null, request, response, 0);
     }
@@ -183,7 +198,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/execute/{task}/in/{configuration}/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String executeJob2(@PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException, SSHExecException {
         return executeJob(null, task, configuration, request, response, 0);
     }
@@ -202,7 +217,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/execute/{task}/in/{configuration}/on/{host}/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String executeJob(@PathParam("host") String host, @PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("0") @QueryParam("retries") Integer retries) throws IOException, SSHExecException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
@@ -271,7 +286,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/startvnctunnel")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String startVncTunnel(
             @QueryParam("desktopname") String desktopName,
             @QueryParam("vncpassword") String vncPassword,
@@ -317,7 +332,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/stopvnctunnel")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String stopVncTunnel(
             @QueryParam("id") int guacSessionId,
             @Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
@@ -356,7 +371,7 @@ public class JobControlEndpoints extends Endpoint {
      */
     @GET
     @Path("/listvnctunnels")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String listVncTunnels(@Context HttpServletRequest request, @Context HttpServletResponse response) throws IOException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
@@ -383,5 +398,60 @@ public class JobControlEndpoints extends Endpoint {
     @Produces("application/json")
     public String listConfigurations() {
         return Settings.getInstance().getSystemConfigurations().getSystemConfigurationAsJson();
+    }
+
+    @POST
+    @Path("/feedback/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public void sendFeedback(@FormParam("feedback") String payload, @Context HttpServletRequest request, @Context HttpServletResponse response) throws MessagingException, IOException {
+
+        Session strudelSession = getSession(request);
+
+        if (settings.isFeedbackEmailEnabled()) {
+            FeedbackDebugData debugData = FeedbackDebugData.fromJson(payload);
+            javax.mail.Session session = javax.mail.Session.getDefaultInstance(settings.getSMTPProperties());
+            session.setDebug(true);
+            MimeMessage message = new MimeMessage(session);
+            message.addRecipient(Message.RecipientType.TO, settings.getFeedbackToAddress());
+            if (strudelSession.hasUserEmail()) {
+                message.setFrom(new InternetAddress(strudelSession.getUserEmail()));
+            } else {
+                message.setFrom(settings.getFeedbackFromAddress());
+            }
+            message.setSubject(settings.getFeedbackEmailSubject());
+
+            Multipart multipart = new MimeMultipart();
+            BodyPart messageBodyPart;
+
+            // Email content
+            messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText("Message: \n" +
+                    debugData.note+"\n" +
+                    "--- Additional info ---\n" +
+                    debugData.getBrowserInfo());
+            multipart.addBodyPart(messageBodyPart);
+
+            // Attachment #1 Screenshot
+            DataSource imageAttachmentDataSource = new ByteArrayDataSource(debugData.getImage(), "image/png");
+            messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setDataHandler(new DataHandler(imageAttachmentDataSource));
+            messageBodyPart.setFileName("screenshot.png");
+            multipart.addBodyPart(messageBodyPart);
+
+            // Attachment #2 HTML
+            messageBodyPart = new MimeBodyPart();
+            messageBodyPart.setText(debugData.html);
+            messageBodyPart.setFileName("page.html");
+            multipart.addBodyPart(messageBodyPart);
+
+            message.setContent(multipart);
+            Transport.send(message);
+        } else {
+            // If no email is setup, feedback is logged as-is.
+            logger.warn("Feedback emails should be configured!");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        response.setStatus(HttpServletResponse.SC_CREATED);
     }
 }
