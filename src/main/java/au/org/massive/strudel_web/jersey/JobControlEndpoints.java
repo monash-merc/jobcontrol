@@ -413,7 +413,10 @@ public class JobControlEndpoints extends Endpoint {
             session.setDebug(true);
             MimeMessage message = new MimeMessage(session);
             message.addRecipient(Message.RecipientType.TO, settings.getFeedbackToAddress());
-            if (strudelSession.hasUserEmail()) {
+
+            // Sometimes the email is not available, and hasUserEmail returns the user ID instead. Assume a valid
+            // email address if the '@' symbol is present.
+            if (strudelSession.hasUserEmail() && strudelSession.getUserEmail().contains("@")) {
                 message.setFrom(new InternetAddress(strudelSession.getUserEmail()));
             } else {
                 message.setFrom(settings.getFeedbackFromAddress());
@@ -427,7 +430,7 @@ public class JobControlEndpoints extends Endpoint {
             messageBodyPart = new MimeBodyPart();
             StringBuilder sb = new StringBuilder();
             sb.append("User information:\n");
-            if (strudelSession.hasUserEmail()) {
+            if (strudelSession.hasUserEmail() && strudelSession.getUserEmail().contains("@")) {
                 sb.append("* Email: " + strudelSession.getUserEmail() + "\n");
             } else {
                 sb.append("* Email: unknown");
