@@ -10,13 +10,11 @@ import java.util.Set;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 
-import au.org.massive.strudel_web.RegexHelper;
+import au.org.massive.strudel_web.util.RegexHelper;
 import au.org.massive.strudel_web.Session;
 import au.org.massive.strudel_web.ssh.ForkedSSHClient;
 import au.org.massive.strudel_web.ssh.SSHClient;
 import au.org.massive.strudel_web.ssh.SSHExecException;
-
-import com.google.gson.Gson;
 
 /**
  * Produces {@link Task} objects based on a given {@link TaskConfiguration} and job type.
@@ -43,7 +41,7 @@ public class TaskFactory {
         return getInstance(taskType, session, remoteHost);
     }
 
-    public static class Task {
+    public class Task {
 
         private final SSHClient sshClient;
         private final String commandPattern;
@@ -59,15 +57,14 @@ public class TaskFactory {
             this.requiredParams = requiredParams;
         }
 
-        public List<Map<String, String>> run(Map<String, String> parameters) throws IOException, SSHExecException, MissingRequiredTaskParametersException {
-            return RegexHelper.processRegexForEachLine(resultRegexPattern, sshClient.exec(createCommand(commandPattern, parameters, defaultParams, requiredParams)));
+        public TaskResult<List<Map<String, String>>> run(Map<String, String> parameters) throws IOException, SSHExecException, MissingRequiredTaskParametersException {
+            String rawCmdResult = sshClient.exec(createCommand(commandPattern, parameters, defaultParams, requiredParams));
+            List<UserMessage> messages = config.getMessagesFromCommandOutput(rawCmdResult);
+            List<Map<String,String>> processedCmdResult = RegexHelper.processRegexForEachLine(resultRegexPattern, rawCmdResult);
+            return new TaskResult<>(messages, processedCmdResult);
         }
 
-        public String runJsonResult(Map<String, String> parameters) throws IOException, SSHExecException, MissingRequiredTaskParametersException {
-            return new Gson().toJson(run(parameters));
-        }
-
-        private static String createCommand(String commandPattern, Map<String, String> params, Map<String, String> defaultParams, Set<String> requiredParams) throws MissingRequiredTaskParametersException {
+        private String createCommand(String commandPattern, Map<String, String> params, Map<String, String> defaultParams, Set<String> requiredParams) throws MissingRequiredTaskParametersException {
             if (requiredParams != null) {
                 // Verify all required parameters are present
                 Set<String> suppliedParams = new HashSet<>();
@@ -102,7 +99,7 @@ public class TaskFactory {
             }
         }
 
-        private static Map<String, String> makeParamsSafe(Map<String, String> params) {
+        private Map<String, String> makeParamsSafe(Map<String, String> params) {
             Map<String, String> safeValues = new HashMap<>();
             for (String key : params.keySet()) {
                 String value = "'" + params.get(key).replace("'", "\\'") + "'";

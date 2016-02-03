@@ -250,7 +250,11 @@ public class JobControlEndpoints extends Endpoint {
             }
 
             try {
-                return remoteTask.runJsonResult(parameters);
+                TaskResult<List<Map<String, String>>> result = remoteTask.run(parameters);
+                if (!result.getUserMessages().isEmpty()) {
+                    session.addUserMessages(result.getUserMessages());
+                }
+                return result.getCommandResultAsJson();
             } catch (MissingRequiredTaskParametersException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
                 return null;
@@ -398,6 +402,18 @@ public class JobControlEndpoints extends Endpoint {
     @Produces("application/json")
     public String listConfigurations() {
         return Settings.getInstance().getSystemConfigurations().getSystemConfigurationAsJson();
+    }
+
+    @GET
+    @Path("/messages/")
+    @Produces("application/json")
+    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("true")@QueryParam("clear") boolean clear) throws IOException {
+        Session session = getSessionWithCertificateOrSendError(request, response);
+        if (session == null) {
+            return null;
+        }
+
+        return new Gson().toJson(session.getOutstandingUserMessages(clear));
     }
 
     @POST

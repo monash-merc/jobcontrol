@@ -14,7 +14,6 @@ public interface SSHClient {
 
     String exec(String remoteCommands) throws IOException, SSHExecException;
 
-    // TODO: ExecuteWatchdog should not be here, because it implies a forked process.
     String exec(String remoteCommands, ExecuteWatchdog watchdog) throws IOException, SSHExecException;
 
     AsyncCommand<String> execAsync(String remoteCommands);

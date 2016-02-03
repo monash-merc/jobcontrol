@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -28,7 +29,7 @@ public class ConfigurationRegistry {
 
     public void addSSHCertSigningBackend(String id, SSHCertSigningBackend backend, boolean setAsDefault) {
         authBackends.put(id, backend);
-        if (setAsDefault) {
+        if (setAsDefault || authBackends.size() == 1) {
             authBackends.put("default", backend);
         }
     }
@@ -52,7 +53,7 @@ public class ConfigurationRegistry {
 
     public void addSystemConfiguration(String id, AbstractSystemConfiguration configuration, boolean setAsDefault) {
         systemConfigurations.put(id, configuration);
-        if (setAsDefault) {
+        if (setAsDefault || systemConfigurations.size() == 1) {
             systemConfigurations.put("default", configuration);
         }
     }
@@ -72,6 +73,12 @@ public class ConfigurationRegistry {
 
     public String getSystemConfigurationAsJson() {
         Gson gson = new Gson();
-        return gson.toJson(systemConfigurations);
+        Set<String> configurationKeys = systemConfigurations.keySet();
+        configurationKeys.remove("default");
+        HashMap<String, AbstractSystemConfiguration> systemConfigurationsCopy = new HashMap<>();
+        for (String key : configurationKeys) {
+            systemConfigurationsCopy.put(key, systemConfigurations.get(key));
+        }
+        return gson.toJson(systemConfigurationsCopy);
     }
 }

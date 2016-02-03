@@ -64,9 +64,19 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
 
     @SuppressWarnings("unchecked")
     private void parseConfig(Map<String, Object> config) throws InvalidJsonConfigurationException {
+
         if (!config.containsKey("tasks")) {
             throw new InvalidJsonConfigurationException("JSON configuration must define 'tasks'");
         }
+
+        List<String> messageRegexs = (List<String>)config.get("messageRegexs");
+        System.out.println("!!!!!!!" + (messageRegexs != null));
+        if (messageRegexs != null) {
+            for (String pattern : messageRegexs) {
+                addMessageRegex(pattern);
+            }
+        }
+
         Map<String, Map<String, Object>> tasks = (Map<String, Map<String, Object>>) config.get("tasks");
         for (String taskName : tasks.keySet()) {
 
@@ -109,7 +119,7 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
                     requiredParams
             );
 
-            addConfiguration(taskName, taskParameters);
+            addRemoteCommand(taskName, taskParameters);
         }
     }
 }

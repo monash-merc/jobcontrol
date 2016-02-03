@@ -1,13 +1,14 @@
 package au.org.massive.strudel_web;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import au.org.massive.strudel_web.job_control.UserMessage;
 import au.org.massive.strudel_web.ssh.CertAuthInfo;
+import au.org.massive.strudel_web.util.FixedSizeStack;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 
 /**
@@ -48,6 +49,7 @@ public class Session {
     private static final String OAUTH_BACKEND = "oauth-backend";
     private static final String OAUTH_ACCESS_TOKEN = "oauth-access-token";
     private static final String GUAC_SESSION = "guacamole-session";
+    private static final String USER_MESSAGE_QUEUE = "user-message-queue";
 
     public void setUserEmail(String email) {
         session.setAttribute(USER_EMAIL, email);
@@ -117,6 +119,34 @@ public class Session {
             }
         }
         return guacamoleSessions;
+    }
+
+    public List<UserMessage> getOutstandingUserMessages(boolean clear) {
+        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>)session.getAttribute(USER_MESSAGE_QUEUE);
+        if (messageStack == null) {
+            return new ArrayList<>(0);
+        }
+        List<UserMessage> messages = new ArrayList<>(messageStack.size());
+        messages.addAll(messageStack);
+        if (clear) {
+            messageStack.clear();
+        }
+        return messages;
+    }
+
+    public void addUserMessage(UserMessage message) {
+        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>)session.getAttribute(USER_MESSAGE_QUEUE);
+        if (messageStack == null) {
+            messageStack = new FixedSizeStack<>(20);
+            session.setAttribute(USER_MESSAGE_QUEUE, messageStack);
+        }
+        messageStack.push(message);
+    }
+
+    public void addUserMessages(Collection<UserMessage> messages) {
+        for (UserMessage msg : messages) {
+            addUserMessage(msg);
+        }
     }
 
     @Override

@@ -1,6 +1,6 @@
 package au.org.massive.strudel_web.job_control;
 
-import au.org.massive.strudel_web.Settings;
+import au.org.massive.strudel_web.util.RegexHelper;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +26,8 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
     private final String loginHost;
     private final boolean terminateTunnelOnLoginHost;
 
+    private final List<String> messageRegexs;
+
     public AbstractSystemConfiguration(String loginHost) {
         this(loginHost, false);
     }
@@ -35,6 +37,7 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
         configurations = new HashMap<>();
         this.loginHost = loginHost;
         this.terminateTunnelOnLoginHost = terminateTunnelOnLoginHost;
+        messageRegexs = new LinkedList<>();
     }
 
     public String getLoginHost() {
@@ -49,12 +52,12 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
         authBackendNames.add(name);
     }
 
-    protected void addConfiguration(String jobName, Map<String, String> defaults,
+    protected void addRemoteCommand(String jobName, Map<String, String> defaults,
                                     String[] requiredParams, String commandPattern, String resultPattern) {
-        addConfiguration(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern);
+        addRemoteCommand(getLoginHost(), jobName, defaults, requiredParams, commandPattern, resultPattern);
     }
 
-    protected void addConfiguration(String host, String jobName, Map<String, String> defaults,
+    protected void addRemoteCommand(String host, String jobName, Map<String, String> defaults,
                                     String[] requiredParams, String commandPattern, String resultPattern) {
 
         Set<String> requiredParamsSet;
@@ -64,10 +67,10 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
             requiredParamsSet = new HashSet<>(Arrays.asList(requiredParams));
         }
 
-        addConfiguration(host, jobName, defaults, requiredParamsSet, commandPattern, resultPattern);
+        addRemoteCommand(host, jobName, defaults, requiredParamsSet, commandPattern, resultPattern);
     }
 
-    protected void addConfiguration(String host, String jobName, Map<String, String> defaults,
+    protected void addRemoteCommand(String host, String jobName, Map<String, String> defaults,
                                     Set<String> requiredParams, String commandPattern, String resultPattern) {
 
         if (defaults == null) {
@@ -77,11 +80,54 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
             requiredParams = new HashSet<>();
         }
 
-        addConfiguration(jobName, new TaskParameters(host, commandPattern, resultPattern, defaults, requiredParams));
+        addRemoteCommand(jobName, new TaskParameters(host, commandPattern, resultPattern, defaults, requiredParams));
     }
 
-    protected void addConfiguration(String jobName, TaskParameters job) {
+    protected void addRemoteCommand(String jobName, TaskParameters job) {
         configurations.put(jobName, job);
+    }
+
+    /**
+     * Adds a regex pattern used to extract command output that is to be displayed to the user via a dialogue box,
+     * for example.
+     * @param messageRegex the regex pattern
+     */
+    protected void addMessageRegex(String messageRegex) {
+        messageRegexs.add(messageRegex);
+    }
+
+    /**
+     * Applies the list of message regular expressions (messageRegexs) to extract
+     * any text that should be presented to the user as a result of any remote command executed
+     * @param commandOutput text from remote command execution
+     * @return a list of {@link UserMessage}
+     */
+    @Override
+    public List<UserMessage> getMessagesFromCommandOutput(String commandOutput) {
+        List<UserMessage> messages = new LinkedList<>();
+        for (String regex : messageRegexs) {
+            List<Map<String, String>> extractedMessages = RegexHelper.processRegexForEachLine(regex, commandOutput);
+            for (Map<String,String> msg : extractedMessages) {
+                for (final String key : msg.keySet()) {
+                    UserMessage.MessageType messageType;
+                    switch (key) {
+                        case "info":
+                            messageType = UserMessage.MessageType.INFORMATION;
+                            break;
+                        case "warn":
+                            messageType = UserMessage.MessageType.WARNING;
+                            break;
+                        case "error":
+                            messageType = UserMessage.MessageType.ERROR;
+                            break;
+                        default:
+                            messageType = UserMessage.MessageType.INFORMATION;
+                    }
+                    messages.add(new UserMessage(messageType, msg.get(key)));
+                }
+            }
+        }
+        return messages;
     }
 
     @Override

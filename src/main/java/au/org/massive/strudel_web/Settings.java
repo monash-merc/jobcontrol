@@ -137,14 +137,12 @@ public class Settings {
                     for (Object o : config.getList("system-configuration-auth-backends"+i)) {
                         c.addAuthBackend((String) o);
                     }
-                    CONFIGURATION_REGISTRY.addSystemConfiguration(configId, c, i == 0);
+                    CONFIGURATION_REGISTRY.addSystemConfiguration(configId, c);
                 }
             }
         } catch (NullPointerException | InvalidJsonConfigurationException | IOException e) {
             throw new RuntimeException(e);
         }
-
-        CONFIGURATION_REGISTRY.addSystemConfiguration("default", new StrudelSystemConfiguration("118.138.233.195"));
     }
 
     public ConfigurationRegistry getSystemConfigurations() {
