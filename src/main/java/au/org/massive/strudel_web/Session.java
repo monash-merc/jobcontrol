@@ -121,24 +121,56 @@ public class Session {
         return guacamoleSessions;
     }
 
-    public List<UserMessage> getOutstandingUserMessages(boolean clear) {
-        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>)session.getAttribute(USER_MESSAGE_QUEUE);
-        if (messageStack == null) {
-            return new ArrayList<>(0);
-        }
-        List<UserMessage> messages = new ArrayList<>(messageStack.size());
-        messages.addAll(messageStack);
-        if (clear) {
-            messageStack.clear();
+    public Set<UserMessage> getUserMessages(String type) {
+        return getUserMessages(UserMessage.MessageType.fromString(type));
+    }
+
+    /**
+     * Gets a set of messages of the given type to display to the user.
+     *
+     * @param type type of message, null for all
+     * @return a set of messages
+     */
+    public Set<UserMessage> getUserMessages(UserMessage.MessageType type) {
+        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>) session.getAttribute(USER_MESSAGE_QUEUE);
+
+        TreeSet<UserMessage> messages = new TreeSet<>(new Comparator<UserMessage>() {
+            @Override
+            public int compare(UserMessage o1, UserMessage o2) {
+                if (o1.getTimestamp() == o2.getTimestamp()) {
+                    return 0;
+                } else {
+                    return (o1.getTimestamp() > o2.getTimestamp()) ? -1 : 1;
+                }
+            }
+        });
+        if (messageStack != null) {
+            if (type == null) {
+                messages.addAll(messageStack);
+            } else {
+                for (UserMessage msg : messageStack) {
+                    if (msg.getType() == type) {
+                        messages.add(msg);
+                    }
+                }
+            }
         }
         return messages;
     }
 
     public void addUserMessage(UserMessage message) {
-        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>)session.getAttribute(USER_MESSAGE_QUEUE);
+        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>) session.getAttribute(USER_MESSAGE_QUEUE);
         if (messageStack == null) {
-            messageStack = new FixedSizeStack<>(20);
+            messageStack = new FixedSizeStack<>(50);
             session.setAttribute(USER_MESSAGE_QUEUE, messageStack);
+        }
+
+        // If the message is being repeated, increment the count and timestamp
+        for (UserMessage msg : messageStack) {
+            if (msg.getMessage().equals(message.getMessage())) {
+                msg.incrementCount();
+                return;
+            }
         }
         messageStack.push(message);
     }

@@ -70,7 +70,6 @@ public class JsonSystemConfiguration extends AbstractSystemConfiguration {
         }
 
         List<String> messageRegexs = (List<String>)config.get("messageRegexs");
-        System.out.println("!!!!!!!" + (messageRegexs != null));
         if (messageRegexs != null) {
             for (String pattern : messageRegexs) {
                 addMessageRegex(pattern);

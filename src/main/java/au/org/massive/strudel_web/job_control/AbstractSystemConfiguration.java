@@ -106,7 +106,7 @@ public abstract class AbstractSystemConfiguration implements TaskConfiguration {
     public List<UserMessage> getMessagesFromCommandOutput(String commandOutput) {
         List<UserMessage> messages = new LinkedList<>();
         for (String regex : messageRegexs) {
-            List<Map<String, String>> extractedMessages = RegexHelper.processRegexForEachLine(regex, commandOutput);
+            List<Map<String, String>> extractedMessages = RegexHelper.processRegex(regex, commandOutput);
             for (Map<String,String> msg : extractedMessages) {
                 for (final String key : msg.keySet()) {
                     UserMessage.MessageType messageType;

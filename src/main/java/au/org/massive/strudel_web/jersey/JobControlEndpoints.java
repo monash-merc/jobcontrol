@@ -9,7 +9,6 @@ import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
 import com.google.gson.Gson;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
@@ -407,13 +406,8 @@ public class JobControlEndpoints extends Endpoint {
     @GET
     @Path("/messages/")
     @Produces("application/json")
-    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("true")@QueryParam("clear") boolean clear) throws IOException {
-        Session session = getSessionWithCertificateOrSendError(request, response);
-        if (session == null) {
-            return null;
-        }
-
-        return new Gson().toJson(session.getOutstandingUserMessages(clear));
+    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @QueryParam("type") String type) throws IOException {
+        return new Gson().toJson(getSession(request).getUserMessages(type));
     }
 
     @POST
