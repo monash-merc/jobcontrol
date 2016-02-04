@@ -91,7 +91,7 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Gets a key pair and get the public key signed
      *
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param request  the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
      * @throws IOException thrown on network IO errors
@@ -129,7 +129,7 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Triggers a session logout
      *
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param request  the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
      * @throws IOException thrown on network IO errors
@@ -152,11 +152,11 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
      *
-     * @param task the name of the task to run
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param task     the name of the task to run
+     * @param request  the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return the result of the command
-     * @throws IOException thrown on network IO errors
+     * @throws IOException      thrown on network IO errors
      * @throws SSHExecException thrown if there are any issues executing the task via SSH
      */
     @GET
@@ -169,12 +169,12 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
      *
-     * @param host the name of the host on which to run the task
-     * @param task the name of the task to run
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param host     the name of the host on which to run the task
+     * @param task     the name of the task to run
+     * @param request  the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return the result of the command
-     * @throws IOException thrown on network IO errors
+     * @throws IOException      thrown on network IO errors
      * @throws SSHExecException thrown if there are any issues executing the task via SSH
      */
     @GET
@@ -188,11 +188,11 @@ public class JobControlEndpoints extends Endpoint {
      * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
      *
      * @param configuration the name of the configuration from which the task should be run
-     * @param task the name of the task to run
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @param task          the name of the task to run
+     * @param request       the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response      the {@link HttpServletResponse} object injected from the {@link Context}
      * @return the result of the command
-     * @throws IOException thrown on network IO errors
+     * @throws IOException      thrown on network IO errors
      * @throws SSHExecException thrown if there are any issues executing the task via SSH
      */
     @GET
@@ -205,19 +205,24 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Runs preconfigured commands on the remote HPC system. These commands are defined as part of a {@link TaskConfiguration} object.
      *
-     * @param host the name of the host on which to run the task
+     * @param host          the name of the host on which to run the task
      * @param configuration the name of the configuration from which the task should be run
-     * @param task the name of the task to run
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @param task          the name of the task to run
+     * @param request       the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response      the {@link HttpServletResponse} object injected from the {@link Context}
      * @return the result of the command
-     * @throws IOException thrown on network IO errors
+     * @throws IOException      thrown on network IO errors
      * @throws SSHExecException thrown if there are any issues executing the task via SSH
      */
     @GET
     @Path("/execute/{task}/in/{configuration}/on/{host}/")
     @Produces(MediaType.APPLICATION_JSON)
-    public String executeJob(@PathParam("host") String host, @PathParam("task") String task, @PathParam("configuration") String configuration, @Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("0") @QueryParam("retries") Integer retries) throws IOException, SSHExecException {
+    public String executeJob(@PathParam("host") String host,
+                             @PathParam("task") String task,
+                             @PathParam("configuration") String configuration,
+                             @Context HttpServletRequest request,
+                             @Context HttpServletResponse response,
+                             @DefaultValue("0") @QueryParam("retries") Integer retries) throws IOException, SSHExecException {
         Session session = getSessionWithCertificateOrSendError(request, response);
         if (session == null) {
             return null;
@@ -251,7 +256,7 @@ public class JobControlEndpoints extends Endpoint {
             try {
                 TaskResult<List<Map<String, String>>> result = remoteTask.run(parameters);
                 if (!result.getUserMessages().isEmpty()) {
-                    session.addUserMessages(result.getUserMessages());
+                    session.addUserMessages(result.getUserMessages(), configuration);
                 }
                 return result.getCommandResultAsJson();
             } catch (MissingRequiredTaskParametersException e) {
@@ -276,14 +281,14 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Starts a VNC tunnel for use with a Guacamole server
      *
-     * @param desktopName the name to assign to the desktop
-     * @param vncPassword the password of the vnc server
-     * @param remoteHost the host on which the vnc server is running
-     * @param display the display number assigned to the vnc server
-     * @param viaGateway a gateway through which the tunnel is created (optional, can be inferred if configurationName provided)
+     * @param desktopName       the name to assign to the desktop
+     * @param vncPassword       the password of the vnc server
+     * @param remoteHost        the host on which the vnc server is running
+     * @param display           the display number assigned to the vnc server
+     * @param viaGateway        a gateway through which the tunnel is created (optional, can be inferred if configurationName provided)
      * @param configurationName the name of the configuration used for this tunnel (optional, recommended)
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @param request           the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response          the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a vnc session id and desktop name
      * @throws IOException thrown on network IO errors
      */
@@ -328,8 +333,8 @@ public class JobControlEndpoints extends Endpoint {
      * Stops a guacamole VNC session
      *
      * @param guacSessionId id of the vnc tunnel session
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
-     * @param response the {@link HttpServletResponse} object injected from the {@link Context}
+     * @param request       the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param response      the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a status message
      * @throws IOException thrown on network IO errors
      */
@@ -367,7 +372,7 @@ public class JobControlEndpoints extends Endpoint {
     /**
      * Lists all active VNC sessions for the current user
      *
-     * @param request the {@link HttpServletRequest} object injected from the {@link Context}
+     * @param request  the {@link HttpServletRequest} object injected from the {@link Context}
      * @param response the {@link HttpServletResponse} object injected from the {@link Context}
      * @return a list of tunnels
      * @throws IOException thrown on network IO errors
@@ -403,11 +408,25 @@ public class JobControlEndpoints extends Endpoint {
         return Settings.getInstance().getSystemConfigurations().getSystemConfigurationAsJson();
     }
 
+    /**
+     * Returns a list of system messages
+     * @param request
+     * @param response
+     * @param tag
+     * @param type
+     * @return
+     * @throws IOException
+     */
     @GET
     @Path("/messages/")
     @Produces("application/json")
-    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @QueryParam("type") String type) throws IOException {
-        return new Gson().toJson(getSession(request).getUserMessages(type));
+    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("")@QueryParam("tag") String tag, @QueryParam("type") String type) throws IOException {
+        Gson gson = new Gson();
+        if (tag == null || tag.isEmpty()) {
+            return gson.toJson(getSession(request).getUserMessages(type));
+        } else {
+            return gson.toJson(getSession(request).getUserMessages(type, tag));
+        }
     }
 
     @POST
@@ -451,7 +470,7 @@ public class JobControlEndpoints extends Endpoint {
                 sb.append("* User id: unknown\n");
             }
             if (strudelSession.getSSHCertSigningBackend() != null) {
-                sb.append("* Service: " + strudelSession.getSSHCertSigningBackend().getName()+"\n");
+                sb.append("* Service: " + strudelSession.getSSHCertSigningBackend().getName() + "\n");
             }
 
             sb.append("Message: \n");

@@ -101,8 +101,10 @@
                                     </md-input-container>
                                     <md-input-container ng-if="selectedConfiguration.configuration.projects">
                                         <label>Project</label>
-                                        <md-select ng-model="newDesktop.project" ng-disabled="desktopLaunchInProgress()">
-                                            <md-option ng-repeat="p in selectedConfiguration.configuration.projects" value="{{ p }}">
+                                        <md-select ng-model="newDesktop.project"
+                                                   ng-disabled="desktopLaunchInProgress()">
+                                            <md-option ng-repeat="p in selectedConfiguration.configuration.projects"
+                                                       value="{{ p }}">
                                                 {{ p }}
                                             </md-option>
                                         </md-select>
@@ -157,10 +159,10 @@
                         <table ng-if="runningDesktops && runningDesktops.length > 0" layout-fill>
                             <thead>
                             <tr>
-                                <th flex="10" style="text-align: center">#</th>
-                                <th flex="40" style="text-align: left">Time remaining</th>
-                                <th flex="10" style="text-align: center">State</th>
-                                <th flex="40"></th>
+                                <th style="text-align: center">#</th>
+                                <th style="text-align: left">Time remaining</th>
+                                <th style="text-align: center">State</th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -185,6 +187,45 @@
                                         </md-button>
                                     </div>
                                 </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </md-card-content>
+                </md-card>
+
+                <md-card layout="column">
+                    <md-card-content layout="column">
+                        <h3>Server messages</h3>
+                        <p ng-if="!serverMessages.length">Any messages from the server will be displayed here</p>
+                        <table layout-fill ng-if="serverMessages.length">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th style="width: 20%; text-align: center"></th>
+                                <th style="width: 20%; text-align: left">Service</th>
+                                <th style="text-align: left">Message</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="message in serverMessages">
+                                <td ng-if="message.type === 'ERROR'">
+                                    <md-icon md-font-set="material-icons">error
+                                        <md-tooltip>Error</md-tooltip>
+                                    </md-icon>
+                                </td>
+                                <td ng-if="message.type === 'WARNING'">
+                                    <md-icon md-font-set="material-icons">warning
+                                        <md-tooltip>Warning</md-tooltip>
+                                    </md-icon>
+                                </td>
+                                <td ng-if="message.type === 'INFORMATION'">
+                                    <md-icon md-font-set="material-icons">message
+                                        <md-tooltip>Information</md-tooltip>
+                                    </md-icon>
+                                </td>
+                                <td>{{ message.timestamp | date:'dd-MM-yyyy hh:mm:ss a' }}</td>
+                                <td>{{ message.service }}</td>
+                                <td>{{ message.message }}</td>
                             </tr>
                             </tbody>
                         </table>

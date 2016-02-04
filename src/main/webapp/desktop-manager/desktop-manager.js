@@ -40,6 +40,7 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                     isArray: true
                 }
             });
+            var getMessagesFromServer = $resource(settings.URLs.apiBase + settings.URLs.messages + "/");
 
 
             // Opens or closes the left side menu
@@ -139,6 +140,20 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                         'username': userName
                     }).$promise.then(
                         function (data) {
+
+                            // Check for server messages
+                            getMessagesFromServer.get().$promise.then(function(serverMessages) {
+                                $scope.serverMessages = [];
+                                for (var key in serverMessages) {
+                                    if (serverMessages.hasOwnProperty(key)) {
+                                        for (var i = 0; i < serverMessages[key].length; i++) {
+                                            serverMessages[key][i]['service'] = key.split("|")[0];
+                                            $scope.serverMessages.push(serverMessages[key][i]);
+                                        }
+                                    }
+                                }
+                            });
+
                             var flush = true; // This flag is used to delay the clearing of the desktops lists until the data has been fetched
                                               // because the momentary blank list looks ugly
                             if (data.length === 0) {

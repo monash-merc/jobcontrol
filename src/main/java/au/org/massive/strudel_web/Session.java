@@ -121,18 +121,41 @@ public class Session {
         return guacamoleSessions;
     }
 
-    public Set<UserMessage> getUserMessages(String type) {
+    private Map<String, FixedSizeStack<UserMessage>> getUserMessageStacks() {
+        Map<String, FixedSizeStack<UserMessage>> messageStacks = (Map<String, FixedSizeStack<UserMessage>>) session.getAttribute(USER_MESSAGE_QUEUE);
+        if (messageStacks == null) {
+            messageStacks = new HashMap<>();
+            session.setAttribute(USER_MESSAGE_QUEUE, messageStacks);
+        }
+        return messageStacks;
+    }
+
+    public Set<UserMessage> getUserMessages(String type, String tag) {
+        return getUserMessages(UserMessage.MessageType.fromString(type), tag);
+    }
+
+    public Map<String,Set<UserMessage>> getUserMessages(String type) {
         return getUserMessages(UserMessage.MessageType.fromString(type));
+    }
+
+    public Map<String,Set<UserMessage>> getUserMessages(UserMessage.MessageType type) {
+        TreeMap<String,Set<UserMessage>> messages = new TreeMap<String,Set<UserMessage>>();
+        for (String tag : getUserMessageStacks().keySet()) {
+            messages.put(tag, getUserMessages(type, tag));
+        }
+        return messages;
     }
 
     /**
      * Gets a set of messages of the given type to display to the user.
      *
-     * @param type type of message, null for all
+     * @param type          type of message, null for all
      * @return a set of messages
      */
-    public Set<UserMessage> getUserMessages(UserMessage.MessageType type) {
-        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>) session.getAttribute(USER_MESSAGE_QUEUE);
+    public Set<UserMessage> getUserMessages(UserMessage.MessageType type, String tag) {
+
+        // Filter tags
+        Stack<UserMessage> messageStack = getUserMessageStacks().get(tag);
 
         TreeSet<UserMessage> messages = new TreeSet<>(new Comparator<UserMessage>() {
             @Override
@@ -144,25 +167,25 @@ public class Session {
                 }
             }
         });
-        if (messageStack != null) {
-            if (type == null) {
-                messages.addAll(messageStack);
-            } else {
-                for (UserMessage msg : messageStack) {
-                    if (msg.getType() == type) {
-                        messages.add(msg);
-                    }
+
+        if (type == null) {
+            messages.addAll(messageStack);
+        } else {
+            for (UserMessage msg : messageStack) {
+                if (msg.getType() == type) {
+                    messages.add(msg);
                 }
             }
         }
         return messages;
     }
 
-    public void addUserMessage(UserMessage message) {
-        FixedSizeStack<UserMessage> messageStack = (FixedSizeStack<UserMessage>) session.getAttribute(USER_MESSAGE_QUEUE);
+    public void addUserMessage(UserMessage message, String tag) {
+        Map<String, FixedSizeStack<UserMessage>> messageStacks = getUserMessageStacks();
+        FixedSizeStack<UserMessage> messageStack = messageStacks.get(tag);
         if (messageStack == null) {
             messageStack = new FixedSizeStack<>(50);
-            session.setAttribute(USER_MESSAGE_QUEUE, messageStack);
+            messageStacks.put(tag, messageStack);
         }
 
         // If the message is being repeated, increment the count and timestamp
@@ -175,9 +198,9 @@ public class Session {
         messageStack.push(message);
     }
 
-    public void addUserMessages(Collection<UserMessage> messages) {
+    public void addUserMessages(Collection<UserMessage> messages, String tag) {
         for (UserMessage msg : messages) {
-            addUserMessage(msg);
+            addUserMessage(msg, tag);
         }
     }
 
