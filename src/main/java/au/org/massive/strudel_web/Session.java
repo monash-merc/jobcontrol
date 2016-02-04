@@ -163,7 +163,7 @@ public class Session {
                 if (o1.getTimestamp() == o2.getTimestamp()) {
                     return 0;
                 } else {
-                    return (o1.getTimestamp() > o2.getTimestamp()) ? -1 : 1;
+                    return (o1.getTimestamp() < o2.getTimestamp()) ? -1 : 1;
                 }
             }
         });

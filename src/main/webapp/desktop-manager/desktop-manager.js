@@ -152,6 +152,7 @@ angular.module('strudelWeb.desktop-manager', ['ngRoute', 'ngResource'])
                                         }
                                     }
                                 }
+                                $scope.serverMessages = $scope.serverMessages.reverse();
                             });
 
                             var flush = true; // This flag is used to delay the clearing of the desktops lists until the data has been fetched
