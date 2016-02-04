@@ -1,13 +1,14 @@
 package au.org.massive.strudel_web;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import au.org.massive.strudel_web.job_control.UserMessage;
 import au.org.massive.strudel_web.ssh.CertAuthInfo;
+import au.org.massive.strudel_web.util.FixedSizeStack;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 
 /**
@@ -48,6 +49,7 @@ public class Session {
     private static final String OAUTH_BACKEND = "oauth-backend";
     private static final String OAUTH_ACCESS_TOKEN = "oauth-access-token";
     private static final String GUAC_SESSION = "guacamole-session";
+    private static final String USER_MESSAGE_QUEUE = "user-message-queue";
 
     public void setUserEmail(String email) {
         session.setAttribute(USER_EMAIL, email);
@@ -117,6 +119,89 @@ public class Session {
             }
         }
         return guacamoleSessions;
+    }
+
+    private Map<String, FixedSizeStack<UserMessage>> getUserMessageStacks() {
+        Map<String, FixedSizeStack<UserMessage>> messageStacks = (Map<String, FixedSizeStack<UserMessage>>) session.getAttribute(USER_MESSAGE_QUEUE);
+        if (messageStacks == null) {
+            messageStacks = new HashMap<>();
+            session.setAttribute(USER_MESSAGE_QUEUE, messageStacks);
+        }
+        return messageStacks;
+    }
+
+    public Set<UserMessage> getUserMessages(String type, String tag) {
+        return getUserMessages(UserMessage.MessageType.fromString(type), tag);
+    }
+
+    public Map<String,Set<UserMessage>> getUserMessages(String type) {
+        return getUserMessages(UserMessage.MessageType.fromString(type));
+    }
+
+    public Map<String,Set<UserMessage>> getUserMessages(UserMessage.MessageType type) {
+        TreeMap<String,Set<UserMessage>> messages = new TreeMap<String,Set<UserMessage>>();
+        for (String tag : getUserMessageStacks().keySet()) {
+            messages.put(tag, getUserMessages(type, tag));
+        }
+        return messages;
+    }
+
+    /**
+     * Gets a set of messages of the given type to display to the user.
+     *
+     * @param type          type of message, null for all
+     * @return a set of messages
+     */
+    public Set<UserMessage> getUserMessages(UserMessage.MessageType type, String tag) {
+
+        // Filter tags
+        Stack<UserMessage> messageStack = getUserMessageStacks().get(tag);
+
+        TreeSet<UserMessage> messages = new TreeSet<>(new Comparator<UserMessage>() {
+            @Override
+            public int compare(UserMessage o1, UserMessage o2) {
+                if (o1.getTimestamp() == o2.getTimestamp()) {
+                    return 0;
+                } else {
+                    return (o1.getTimestamp() > o2.getTimestamp()) ? -1 : 1;
+                }
+            }
+        });
+
+        if (type == null) {
+            messages.addAll(messageStack);
+        } else {
+            for (UserMessage msg : messageStack) {
+                if (msg.getType() == type) {
+                    messages.add(msg);
+                }
+            }
+        }
+        return messages;
+    }
+
+    public void addUserMessage(UserMessage message, String tag) {
+        Map<String, FixedSizeStack<UserMessage>> messageStacks = getUserMessageStacks();
+        FixedSizeStack<UserMessage> messageStack = messageStacks.get(tag);
+        if (messageStack == null) {
+            messageStack = new FixedSizeStack<>(50);
+            messageStacks.put(tag, messageStack);
+        }
+
+        // If the message is being repeated, increment the count and timestamp
+        for (UserMessage msg : messageStack) {
+            if (msg.getMessage().equals(message.getMessage())) {
+                msg.incrementCount();
+                return;
+            }
+        }
+        messageStack.push(message);
+    }
+
+    public void addUserMessages(Collection<UserMessage> messages, String tag) {
+        for (UserMessage msg : messages) {
+            addUserMessage(msg, tag);
+        }
     }
 
     @Override

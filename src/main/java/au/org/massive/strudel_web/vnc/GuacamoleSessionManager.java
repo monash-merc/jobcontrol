@@ -37,6 +37,7 @@ public class GuacamoleSessionManager implements ServletContextListener {
         for (Tunnel t : sshTunnels.values()) {
             t.stopTunnel();
         }
+        tunnelCleaner.cancel(); // Avoid tomcat memory leaks
     }
 
     @Override

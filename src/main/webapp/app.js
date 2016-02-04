@@ -34,7 +34,8 @@ angular.module('strudelWeb', [
             'oneTimePassword': 'execute/otp',
             'updateVncPassword': 'updatevncpwd',
             'isDesktopRunning': 'execute/running',
-            'guacamole': '/guacamole/'
+            'guacamole': '/guacamole/',
+            'messages': 'messages'
         },
         'maxDesktopsAllowed': 1,
         'maxRetryOnServerError': 5

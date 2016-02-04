@@ -1,12 +1,11 @@
 package au.org.massive.strudel_web.job_control;
 
-import au.org.massive.strudel_web.RegexHelper;
+import au.org.massive.strudel_web.util.RegexHelper;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -109,17 +108,25 @@ public class StrudelDesktopConfigurationAdapter extends HashMap<String, JsonSyst
         final int jobPPN = ((Double) jobDefaults.get("jobParams_ppn")).intValue();
 
         Map<String, Object> parsedConfig = new HashMap<>();
+
         parsedConfig.put("loginHost", loginHost);
         //noinspection unchecked
         parsedConfig.put("isTunnelTerminatedOnLoginHost", isTunnelTerminatedOnLoginHost(
                 (String) ((Map<String, Object>) config.get("tunnel")).get("cmd")
         ));
+
+        List<String> messageRegexes = new LinkedList<>();
+        parsedConfig.put("messageRegexs", messageRegexes);
+        if (config.containsKey("messageRegexs")) {
+            //noinspection unchecked
+            List<Map<String,String>> msgRegexes = ((List<Map<String,String>>)config.get("messageRegexs"));
+            for (Map<String,String> msgRegex : msgRegexes) {
+                messageRegexes.add(convertRegex(msgRegex.get("pattern")));
+            }
+        }
+
         Map<String, Object> tasks = new HashMap<>();
         parsedConfig.put("tasks", tasks);
-
-        Map<String, Object> function;
-        String functionName;
-
         tasks.put("exechost", extractFunctionFromStrudelConfig("execHost", config));
         tasks.put("getprojects", extractFunctionFromStrudelConfig("getProjects", config));
         tasks.put("listall", extractFunctionFromStrudelConfig("listAll", config));

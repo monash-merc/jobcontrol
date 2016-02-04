@@ -11,3 +11,8 @@
 .facility-heading {
   font-size: large;
 }
+
+.feedback-btn {
+  top: 0px;
+  bottom: auto;
+}
