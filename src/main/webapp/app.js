@@ -94,15 +94,30 @@ angular.module('strudelWeb', [
             );
         });
 
+        var hideFeedbackButton = function() {
+            var buttonElements = document.getElementsByClassName("feedback-btn");
+            if (buttonElements.length > 0) {
+                buttonElements[0].style.display = 'none';
+            }
+        };
+        var showFeedbackButton = function() {
+            var buttonElements = document.getElementsByClassName("feedback-btn");
+            if (buttonElements.length > 0) {
+                buttonElements[0].style.display = 'block';
+            }
+        };
         $scope.toolbarHidden = false;
         $rootScope.$on('makeToolbarVisible', function (event) {
             $scope.toolbarHidden = false;
+            showFeedbackButton();
         });
 
         $rootScope.$on('makeToolbarInvisible', function (event) {
             $scope.toolbarHidden = true;
+            hideFeedbackButton();
         });
         $rootScope.$on('$routeChangeSuccess', function (event) {
             $scope.toolbarHidden = false;
+            showFeedbackButton();
         });
     }]);
