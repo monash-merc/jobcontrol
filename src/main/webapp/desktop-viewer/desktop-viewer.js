@@ -129,7 +129,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                             })(guacamoleContent.cookie.split(";"));
 
                             function redirectGuacIframe() {
-                                guacamoleContent.location.hash = "#/client/c/" + vncInfo.desktopName;
+                                guacamoleContent.location.hash = "#/" + vncInfo.desktopName;
                                 guacamoleFrame.contentWindow.focus();
                                 $rootScope.$broadcast("makeToolbarInvisible");
                                 $scope.desktopReady = true;
@@ -139,7 +139,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                             // The auth plugin for guacamole inspects any cookie beginning with "vnc-credentials"
                             var cookieExpiry = new Date();
                             cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
-                            $cookies.put("vnc-credentials-" + Date.now().toString(), JSON.stringify(
+                            $cookies.put("vnc-credentials-strudel-web", JSON.stringify(
                                 {
                                     'name': vncInfo.desktopName,
                                     'hostname': 'localhost',
