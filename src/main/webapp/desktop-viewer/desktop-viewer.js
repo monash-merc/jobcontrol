@@ -37,6 +37,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
 
                 $scope.guacamoleUrl = $sce.trustAsResourceUrl(settings.URLs.guacamole);
 
+                $scope.error = false;
+
                 $scope.desktopReady = false;
                 var bootstrap = function (userName, configurationName, desktopId) {
                     var desktopName = "desktop" + Date.now();
@@ -52,7 +54,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                 return data[0].execHost;
                             },
                             function (error) {
-                                $rootScope.$broadcast("notify", "Could not get the execution host for this desktop!");
+                                $scope.errorText = "Could not get the execution host for this desktop";
+                                $scope.error = true;
                             })
                         // 2. Get the display number
                         .then(function (host) {
@@ -76,7 +79,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                         }
                                     },
                                     function (error) {
-                                        $rootScope.$broadcast("notify", "Could not get the display number for this desktop!");
+                                        $scope.errorText = "Could not get the display number for this desktop";
+                                        $scope.error = true;
                                     }
                                 );
                         })
@@ -93,7 +97,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                     return vncInfo;
                                 },
                                 function (error) {
-                                    $rootScope.$broadcast("notify", "Could not generate a one-time password for this desktop!");
+                                    $scope.errorText = "Could not generate a one-time password for this desktop";
+                                    $scope.error = true;
                                 });
                         })
                         // 4. Check existing tunnels
@@ -110,7 +115,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                         return vncInfo;
                                     },
                                     function () {
-                                        $rootScope.$broadcast("notify", "Could not start the VNC tunnel!");
+                                        $scope.errorText = "Could not start the VNC tunnel!";
+                                        $scope.error = true;
                                     });
                         })
                         // Refresh Guacamole
