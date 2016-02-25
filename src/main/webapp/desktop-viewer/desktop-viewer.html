@@ -1,7 +1,7 @@
 <md-content layout="column" flex layout-align="center center">
     <iframe id="guacamoleFrame" ng-src="{{ guacamoleUrl }}" layout-fill seamless='seamless' frameborder="0" ng-show="desktopReady" flex></iframe>
     <md-progress-circular md-mode="indeterminate" ng-if="!desktopReady && !error"></md-progress-circular>
-    <div ng-if="error" syle="text-align: center">
+    <div ng-if="error" style="text-align: center">
         <md-icon md-font-set="material-icons" ng-if="!desktop.running" style="font-size: 2em">report_problem</md-icon>
         <p>Something went wrong and your desktop cannot be displayed right now. Try refreshing this page or click
         the "send feedback" button on the top right of this page to report an issue.</p>
