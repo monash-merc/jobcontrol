@@ -181,7 +181,7 @@ public class ForkedSSHClient extends AbstractSSHClient {
         cmdLine.addArgument("-i");
         cmdLine.addArgument(certFiles.getPrivKeyFile().getAbsolutePath());
         cmdLine.addArgument("-oStrictHostKeyChecking=no"); // TODO: Remove me when ready
-        //cmdLine.addArgument("-oBatchMode=yes");
+        cmdLine.addArgument("-oBatchMode=yes");
         cmdLine.addArgument("-oKbdInteractiveAuthentication=no");
         cmdLine.addArgument("-l");
         cmdLine.addArgument(getAuthInfo().getUserName());
