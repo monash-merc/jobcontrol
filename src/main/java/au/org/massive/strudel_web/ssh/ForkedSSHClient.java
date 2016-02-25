@@ -215,7 +215,8 @@ public class ForkedSSHClient extends AbstractSSHClient {
             exec.execute(cmdLine);
         } catch (ExecuteException e) {
             System.err.println("SSH command failed: "+cmdLine.toString());
-            System.err.println("Remove commands: "+remoteCommands);
+            System.err.println("Remote commands: "+remoteCommands);
+            System.err.println("Remote server said: " + output.toString());
             throw new SSHExecException(output.toString(), e);
         } finally {
             certFiles.close();
