@@ -9,6 +9,8 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 
 import au.org.massive.strudel_web.AsyncTasks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * An abstract SSH client that provides command execution and async command execution methods
@@ -17,6 +19,7 @@ import au.org.massive.strudel_web.AsyncTasks;
  */
 public abstract class AbstractSSHClient implements SSHClient {
 
+    private final static Logger logger = LogManager.getLogger(AbstractSSHClient.class);
     private final CertAuthInfo authInfo;
     private final String viaGateway;
     private final String remoteHost;
@@ -58,7 +61,7 @@ public abstract class AbstractSSHClient implements SSHClient {
         try {
             return exec(remoteCommands, null);
         } catch (SSHExecException e) {
-            System.err.println("Error running command "+remoteCommands+" on host "+remoteHost + " via "+viaGateway);
+            logger.error("Error running command "+remoteCommands+" on host "+remoteHost + " via "+viaGateway);
             throw e;
         }
     }

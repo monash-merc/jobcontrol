@@ -21,6 +21,8 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A non-native SSH client implmentation that forks SSH processes for each request.
@@ -31,6 +33,7 @@ import org.apache.commons.exec.PumpStreamHandler;
  */
 public class ForkedSSHClient extends AbstractSSHClient {
 
+    private final static Logger logger = LogManager.getLogger(ForkedSSHClient.class);
     private final CertAuthInfo authInfo;
 
     public ForkedSSHClient(CertAuthInfo authInfo, String remoteHost) {
@@ -214,9 +217,9 @@ public class ForkedSSHClient extends AbstractSSHClient {
         try {
             exec.execute(cmdLine);
         } catch (ExecuteException e) {
-            System.err.println("SSH command failed: "+cmdLine.toString());
-            System.err.println("Remote commands: "+remoteCommands);
-            System.err.println("Remote server said: " + output.toString());
+            logger.error("SSH command failed: "+cmdLine.toString()+"\n"+
+                         "Remote commands: "+remoteCommands+"\n"+
+                         "Remote server said: " + output.toString());
             throw new SSHExecException(output.toString(), e);
         } finally {
             certFiles.close();
