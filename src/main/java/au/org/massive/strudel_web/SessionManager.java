@@ -67,8 +67,7 @@ public class SessionManager implements HttpSessionListener {
         Session s = new Session(event.getSession());
 
         if (s.hasCertificate()) {
-            Logging.accessLogger.info("User session ended for " + s.getCertificate().getUserName() + (s.hasUserEmail() ? "/ " + s.getUserEmail() : "") +
-                    " (" +s.getCertificate().formattedTimeSinceCreated()+")");
+            Logging.accessLogger.info("User session ended for " + s.getCertificate().getUserName() + " (" +s.getCertificate().formattedTimeSinceCreated()+")");
         }
 
         // Clean up any left over guacamole sessions
