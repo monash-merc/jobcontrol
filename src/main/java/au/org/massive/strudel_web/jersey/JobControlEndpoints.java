@@ -43,7 +43,7 @@ public class JobControlEndpoints extends Endpoint {
 
     private static final Settings settings = Settings.getInstance();
 
-    private static final Logger logger = LogManager.getLogger(JobControlEndpoints.class.getName());
+    private static final Logger logger = LogManager.getLogger(JobControlEndpoints.class);
 
     /**
      * Gets (and creates, if necessary) a session and returns the id and whether the session
@@ -108,6 +108,7 @@ public class JobControlEndpoints extends Endpoint {
         } else {
             try {
                 session.setCertificate(KeyService.registerKey(session.getOAuthAccessToken(), session.getSSHCertSigningBackend()));
+                Logging.accessLogger.info("User session started for " + getUserString(session));
             } catch (OAuthSystemException e) {
                 e.printStackTrace();
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -124,6 +125,10 @@ public class JobControlEndpoints extends Endpoint {
         responseMessage.put("status", "OK");
         responseMessage.put("message", "Key pair generated and public key signed successfully");
         return gson.toJson(responseMessage);
+    }
+
+    private String getUserString(Session session) {
+        return session.getCertificate().getUserName() + (session.hasUserEmail() ? "/ " + session.getUserEmail() : "");
     }
 
     /**
@@ -255,6 +260,7 @@ public class JobControlEndpoints extends Endpoint {
 
             try {
                 TaskResult<List<Map<String, String>>> result = remoteTask.run(parameters);
+                Logging.accessLogger.info("Ran task \"" + task + "\" on \"" + host + "\" from configuration \"" + configuration + "\" for " + getUserString(session));
                 if (!result.getUserMessages().isEmpty()) {
                     session.addUserMessages(result.getUserMessages(), configuration);
                 }
@@ -410,6 +416,7 @@ public class JobControlEndpoints extends Endpoint {
 
     /**
      * Returns a list of system messages
+     *
      * @param request
      * @param response
      * @param tag
@@ -420,7 +427,7 @@ public class JobControlEndpoints extends Endpoint {
     @GET
     @Path("/messages/")
     @Produces("application/json")
-    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("")@QueryParam("tag") String tag, @QueryParam("type") String type) throws IOException {
+    public String systemMessages(@Context HttpServletRequest request, @Context HttpServletResponse response, @DefaultValue("") @QueryParam("tag") String tag, @QueryParam("type") String type) throws IOException {
         Gson gson = new Gson();
         if (tag == null || tag.isEmpty()) {
             return gson.toJson(getSession(request).getUserMessages(type));
