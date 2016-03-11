@@ -128,7 +128,7 @@ public class JobControlEndpoints extends Endpoint {
     }
 
     private String getUserString(Session session) {
-        return session.getCertificate().getUserName() + (session.hasUserEmail() ? "/ " + session.getUserEmail() : "");
+        return session.getCertificate().getUserName();
     }
 
     /**
