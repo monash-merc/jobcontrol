@@ -50,7 +50,6 @@
   </servlet-mapping>
   
   <servlet>
-    <description></description>
     <display-name>LoginController</display-name>
     <servlet-name>LoginController</servlet-name>
     <servlet-class>au.org.massive.strudel_web.LoginController</servlet-class>
