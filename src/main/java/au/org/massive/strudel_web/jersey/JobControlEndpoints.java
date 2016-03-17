@@ -9,6 +9,7 @@ import au.org.massive.strudel_web.ssh.SSHExecException;
 import au.org.massive.strudel_web.vnc.GuacamoleSession;
 import au.org.massive.strudel_web.vnc.GuacamoleSessionManager;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
@@ -457,7 +458,13 @@ public class JobControlEndpoints extends Endpoint {
             } else {
                 message.setFrom(settings.getFeedbackFromAddress());
             }
-            message.setSubject(settings.getFeedbackEmailSubject());
+
+            // Subject line interpolation
+            Map<String,String> subjectLineValues = new HashMap<String,String>();
+            subjectLineValues.put("username", strudelSession.hasCertificate()?strudelSession.getCertificate().getUserName():"unknown user");
+            subjectLineValues.put("email", strudelSession.hasUserEmail()?strudelSession.getUserEmail():"unknown email");
+            StrSubstitutor sub = new StrSubstitutor(subjectLineValues);
+            message.setSubject(sub.replace(settings.getFeedbackEmailSubject()));
 
             Multipart multipart = new MimeMultipart();
             BodyPart messageBodyPart;
@@ -469,7 +476,7 @@ public class JobControlEndpoints extends Endpoint {
             if (strudelSession.hasUserEmail() && strudelSession.getUserEmail().contains("@")) {
                 sb.append("* Email: " + strudelSession.getUserEmail() + "\n");
             } else {
-                sb.append("* Email: unknown");
+                sb.append("* Email: unknown\n");
             }
             if (strudelSession.hasCertificate()) {
                 sb.append("* User id: " + strudelSession.getCertificate().getUserName() + "\n");
@@ -480,7 +487,7 @@ public class JobControlEndpoints extends Endpoint {
                 sb.append("* Service: " + strudelSession.getSSHCertSigningBackend().getName() + "\n");
             }
 
-            sb.append("Message: \n");
+            sb.append("\nMessage: \n");
             sb.append(debugData.note + "\n\n");
             sb.append("--- Additional info ---\n");
             sb.append(debugData.getBrowserInfo());
