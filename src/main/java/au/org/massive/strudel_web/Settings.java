@@ -183,12 +183,4 @@ public class Settings {
     public String getBaseUrl() {
         return BASE_URL;
     }
-
-    public String getBaseUrl(HttpServletRequest request) {
-        if (BASE_URL == null) {
-            return request.getRequestURL().toString();
-        } else {
-            return BASE_URL;
-        }
-    }
 }
