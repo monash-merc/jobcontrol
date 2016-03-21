@@ -8,6 +8,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.net.ssl.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +30,7 @@ public class Settings {
     private String OAUTH_REDIRECT;
     private ConfigurationRegistry CONFIGURATION_REGISTRY;
 
+    private String BASE_URL;
     private InternetAddress FEEDBACK_TO_ADDRESS;
     private InternetAddress FEEDBACK_FROM_ADDRESS;
     private String SMTP_HOST;
@@ -91,7 +93,7 @@ public class Settings {
             throw new RuntimeException(e);
         }
         FEEDBACK_EMAIL_SUBJECT = config.getString("feedback-email-subject", "Feedback for Strudel Web");
-
+        BASE_URL = config.getString("base-url", null);
         setupSystemConfigurations(config);
     }
 
@@ -176,5 +178,17 @@ public class Settings {
 
     public boolean isFeedbackEmailEnabled() {
         return FEEDBACK_TO_ADDRESS != null;
+    }
+
+    public String getBaseUrl() {
+        return BASE_URL;
+    }
+
+    public String getBaseUrl(HttpServletRequest request) {
+        if (BASE_URL == null) {
+            return request.getRequestURL().toString();
+        } else {
+            return BASE_URL;
+        }
     }
 }

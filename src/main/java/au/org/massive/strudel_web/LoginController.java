@@ -53,7 +53,7 @@ public class LoginController extends HttpServlet {
         session.setSSHCertSigningBackend(authBackend);
 
         // ** If no access token, go get one
-        URI authRedirectUrl = URI.create(request.getRequestURL().toString() + "?service=" + URLEncoder.encode(authServiceId, "utf-8"));
+        URI authRedirectUrl = URI.create(settings.getBaseUrl(request) + "?service=" + URLEncoder.encode(authServiceId, "utf-8"));
         if (!session.hasOAuthAccessToken()) {
             try {
                 session.setCertificate(null);
