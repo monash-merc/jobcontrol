@@ -217,9 +217,11 @@ public class ForkedSSHClient extends AbstractSSHClient {
         try {
             exec.execute(cmdLine);
         } catch (ExecuteException e) {
-            logger.error("SSH command failed: "+cmdLine.toString()+"\n"+
-                         "Remote commands: "+remoteCommands+"\n"+
-                         "Remote server said: " + output.toString());
+            String error = "SSH command failed for user "+this.authInfo.getUserName()+": "+cmdLine.toString()+"; "+
+                    "Remote commands: "+remoteCommands+"; "+
+                    "Remote server said: " + output.toString();
+            error = error.replaceAll("[\\t\\n\\r]"," ");
+            logger.error(error);
             throw new SSHExecException(output.toString(), e);
         } finally {
             certFiles.close();
