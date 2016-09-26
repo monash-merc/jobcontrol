@@ -468,7 +468,7 @@
 								$('#feedback-overview').show();
 								$('#feedback-overview-description-text>textarea').remove();
 								$('#feedback-overview-screenshot>img').remove();
-								$('<textarea id="feedback-overview-note">' + $('#feedback-note').val() + '</textarea>').insertAfter('#feedback-overview-description-text h3:eq(0)');
+								$('<textarea id="feedback-overview-note" placeholder="Please include your contact details if you require a response">' + $('#feedback-note').val() + '</textarea>').insertAfter('#feedback-overview-description-text h3:eq(0)');
 								$('#feedback-overview-screenshot').append('<img class="feedback-screenshot" src="' + img + '" />');
 							}
 							else {
