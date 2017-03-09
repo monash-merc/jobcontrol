@@ -6,10 +6,7 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by jason on 29/09/15.
@@ -20,7 +17,7 @@ public class ConfigurationRegistry {
 
     public ConfigurationRegistry() {
         this.authBackends = new HashMap<>();
-        this.systemConfigurations = new HashMap<>();
+        this.systemConfigurations = new LinkedHashMap<>();
     }
 
     public void addSSHCertSigningBackend(String id, SSHCertSigningBackend backend) {
