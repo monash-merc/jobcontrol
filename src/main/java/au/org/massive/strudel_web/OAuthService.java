@@ -123,7 +123,7 @@ public class OAuthService {
             JWTReader jwtReader = new JWTReader();
             JWT jwtToken = jwtReader.read(accessToken);
             session.setUserEmail(jwtToken.getClaimsSet().getCustomField("email", String.class));
-        } catch {
+        } catch (Exception e) {
         }
     }
 
