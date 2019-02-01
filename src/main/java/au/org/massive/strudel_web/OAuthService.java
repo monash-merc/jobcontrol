@@ -124,6 +124,7 @@ public class OAuthService {
             JWT jwtToken = jwtReader.read(accessToken);
             session.setUserEmail(jwtToken.getClaimsSet().getCustomField("email", String.class));
         } catch (Exception e) {
+            session.setUserEmail("unknown@email.org");
         }
     }
 
