@@ -119,10 +119,12 @@ public class OAuthService {
         req.setHeader("Authorization", authHeader);
         String accessToken = client.accessToken(req).getAccessToken();
         session.setOAuthAccessToken(accessToken);
-
-        JWTReader jwtReader = new JWTReader();
-        JWT jwtToken = jwtReader.read(accessToken);
-        session.setUserEmail(jwtToken.getClaimsSet().getCustomField("email", String.class));
+        try {
+            JWTReader jwtReader = new JWTReader();
+            JWT jwtToken = jwtReader.read(accessToken);
+            session.setUserEmail(jwtToken.getClaimsSet().getCustomField("email", String.class));
+        } catch {
+        }
     }
 
 }
