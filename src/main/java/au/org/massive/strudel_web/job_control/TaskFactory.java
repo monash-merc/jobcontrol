@@ -31,9 +31,16 @@ public class TaskFactory {
 
     public Task getInstance(String taskType, Session session, String remoteHost) throws IOException, NoSuchTaskTypeException {
         TaskParameters params = config.findByTaskType(taskType);
-        return new Task(new ForkedSSHClient(session.getCertificate(), remoteHost),
-                params.getCommandPattern(), params.getResultRegexPattern(), params.getDefaultParams(),
-                params.getRequiredParams());
+        String taskRemoteHost = config.findByTaskType(taskType).getRemoteHost();
+        if (taskRemoteHost != "") {
+            return new Task(new ForkedSSHClient(session.getCertificate(), taskRemoteHost),
+                    params.getCommandPattern(), params.getResultRegexPattern(), params.getDefaultParams(),
+                    params.getRequiredParams());
+        } else {
+            return new Task(new ForkedSSHClient(session.getCertificate(), remoteHost),
+                    params.getCommandPattern(), params.getResultRegexPattern(), params.getDefaultParams(),
+                    params.getRequiredParams());
+        }
     }
 
     public Task getInstance(String taskType, Session session) throws IOException, NoSuchTaskTypeException {
