@@ -14,8 +14,8 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
     }])
 
     .controller('DesktopViewerCtrl',
-        ['$window', '$scope', '$rootScope', '$cookies', '$http', '$resource', '$location', '$routeParams', '$sce', 'settings',
-            function ($window, $scope, $rootScope, $cookies, $http, $resource, $location, $routeParams, $sce, settings) {
+        ['$scope', '$rootScope', '$cookies', '$http', '$resource', '$location', '$routeParams', '$sce', 'settings',
+            function ($scope, $rootScope, $cookies, $http, $resource, $location, $routeParams, $sce, settings) {
                 // Resources
                 var sessionInfoResource = $resource(settings.URLs.apiBase + settings.URLs.sessionInfo);
                 var execHostResource = $resource(settings.URLs.apiBase + settings.URLs.execHost + "/in/:configuration/", {}, {
@@ -40,7 +40,6 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                 $scope.error = false;
 
                 $scope.desktopReady = false;
-		$scope.cookiesReady = false;
                 var bootstrap = function (userName, configurationName, desktopId) {
                     var desktopName = "desktop" + Date.now();
 
@@ -122,7 +121,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                         })
                         // Refresh Guacamole
                         .then(function (vncInfo) {
-                            /*var guacamoleFrame = document.getElementById("guacamoleFrame");
+                            var guacamoleFrame = document.getElementById("guacamoleFrame");
                             var guacamoleContent = guacamoleFrame.contentDocument || guacamoleFrame.contentWindow.document;
 
                             // Get the GUAC_AUTH cookie
@@ -165,42 +164,7 @@ angular.module('strudelWeb.desktop-viewer', ['ngRoute', 'ngResource', 'ngCookies
                                     .then(redirectGuacIframe);
                             } else {
                                 redirectGuacIframe();
-                            }*/
-				var cookieExpiry = new Date();
-                            	cookieExpiry.setTime(cookieExpiry.getTime() + (1 * 60 * 1000)); // 1 minute expiry
-                            	$cookies.put("vnc-credentials-strudel-web", JSON.stringify(
-                                {
-                                    'name': vncInfo.desktopName,
-                                    'hostname': 'localhost',
-                                    'port': vncInfo.port.toString(),
-                                    'password': vncInfo.password,
-                                    'protocol': 'vnc',
-                                }
-                                ),
-                                {
-                                    'expires': cookieExpiry
-                                });
-                                $window.localStorage.removeItem("GUAC_AUTH");
-                                $window.localStorage.removeItem("GUAC_HISTORY");
-                                $scope.cookiesReady = true;
-                                var waitingFunc = setTimeout(checkGuacFrameReady, 2000);
-                                function checkGuacFrameReady(){
-                                        var guacamoleFrame = document.getElementById("guacamoleFrame");
-                                        if(!guacamoleFrame){
-                                                console.log("not ready...");
-                                                waitingFunc = setTimeout(checkGuacFrameReady, 2000);
-                                        }
-                                        else{
-                                                console.log("ready...");
-                                                clearTimeout(waitingFunc);
-                                                var guacamoleContent = guacamoleFrame.contentDocument || guacamoleFrame.contentWindow.document;
-                                                guacamoleContent.location.hash = "#/" + vncInfo.desktopName;
-                                                guacamoleFrame.contentWindow.focus();
-                                                $rootScope.$broadcast("makeToolbarInvisible");
-                                                $scope.desktopReady = true;
-                                        }
-                                }
-
+                            }
                         });
                 };
 
