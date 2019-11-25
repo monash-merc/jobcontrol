@@ -164,6 +164,9 @@ public class KeyService {
         } catch (Exception e) {
             mail = certificateResponse.get("user");
         }
+        if (mail == null) {
+            mail = certificateResponse.get("user");
+        }
         try {
             return new CertAuthInfo(certificateResponse.get("user"), mail, certificateResponse.get("certificate"), keyToString((RSAPrivateKey) kp.getPrivate()));
         } catch (UnsupportedKeyException e) {
