@@ -11,11 +11,13 @@ public class CertAuthInfo {
     private final String userName;
     private final String certificate;
     private final String privateKey;
+    private final String mail;
     private final Long createdTime;
 
-    public CertAuthInfo(String userName, String certificate, String privateKey) {
+    public CertAuthInfo(String userName, String mail, String certificate, String privateKey) {
         super();
         this.userName = userName;
+        this.mail = mail;
         this.certificate = certificate;
         this.privateKey = privateKey;
         createdTime = System.currentTimeMillis();
@@ -23,6 +25,10 @@ public class CertAuthInfo {
 
     public String getUserName() {
         return userName;
+    }
+
+    public String getMail() {
+        return mail;
     }
 
     public String getCertificate() {

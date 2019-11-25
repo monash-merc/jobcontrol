@@ -109,6 +109,7 @@ public class JobControlEndpoints extends Endpoint {
         } else {
             try {
                 session.setCertificate(KeyService.registerKey(session.getOAuthAccessToken(), session.getSSHCertSigningBackend()));
+                session.setUserEmail(session.getCertificate().getMail());
                 Logging.accessLogger.info("User session started for " + getUserString(session));
             } catch (OAuthSystemException e) {
                 e.printStackTrace();
