@@ -139,6 +139,7 @@ public class KeyService {
         apiRequest.setHeader(OAuth.HeaderType.CONTENT_TYPE, "application/json");
 
         Map<String, String> data = new HashMap<>();
+        String mail;
         try {
             data.put("public_key", keyToString((RSAPublicKey) kp.getPublic()));
         } catch (UnsupportedKeyException e) {
@@ -159,7 +160,15 @@ public class KeyService {
         Map<String, String> certificateResponse = (Map<String, String>) gson.fromJson(apiResponse.getBody(), HashMap.class);
 
         try {
-            return new CertAuthInfo(certificateResponse.get("user"), certificateResponse.get("certificate"), keyToString((RSAPrivateKey) kp.getPrivate()));
+            mail = certificateResponse.get("mail");
+        } catch (Exception e) {
+            mail = certificateResponse.get("user");
+        }
+        if (mail == null) {
+            mail = certificateResponse.get("user");
+        }
+        try {
+            return new CertAuthInfo(certificateResponse.get("user"), mail, certificateResponse.get("certificate"), keyToString((RSAPrivateKey) kp.getPrivate()));
         } catch (UnsupportedKeyException e) {
             throw new RuntimeException(e);
         }
